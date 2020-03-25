@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1584674302808.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "940627930",
+    "id" : "376EC75F",
+    "lastKnownWriteTime" : 1585146124,
+    "last_content_update" : 1585146124191,
+    "path" : "~/Dropbox/COVID_19/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "60,217",
+        "scrollLine" : "55"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,750 @@
+
+library(shiny)
+library(shinyWidgets)
+library(tidyverse)
+library(scales)
+# library(plotly)
+library(data.table)
+library(lubridate)
+library(ggrepel)
+library(xml2)
+#library(rsconnect)
+library(bit64)
+#library(gganimate)
+#library(gifski)
+#library(png)
+#library(maps)
+library(RCurl)
+library(httr)
+library(ggalluvial)
+theme_set(theme_minimal())
+#library(tidylog)
+source("R/0. load_data_jhu.R")
+source("R/1. functions.R")
+
+
+
+ui <- navbarPage("COVID-19 Application",
+                # fluid = FALSE,
+                 id = "tab",
+                tabPanel("About",
+                         br(), br(),br(),
+                         
+                         strong("How to Use this APP"), br(),
+                         "We have developed this app to provide live data on the trends of COVID-19 coronavirus. The app provides you with a range of analysis and visualisations that enable you to track the spread of virus around the world and helps you get a sense of patterns across different countries and regions",
+                         br(), br(),
+                         "You have a few options in the top menu:", br(), br(),
+                         strong ("World Explorer:"),"This page allows you to visualise different indicators such as number of cases, deaths, or recoveries, both cumulative and new, in actual or per capita terms.",br(),br(),
+                         #  img(src='images\\image01.png'), br(), br(),
+                         strong ("World Day Zero:"),"This page presents the number of cases (reported, deaths, recoveries) in actual and per capita terms. You can add or remove countries and compare them. The x-axis is number of days since the first case was reported which provides you with an opportunity to understand how long it has taken a country to reach a specific number of cases",br(),br(),
+                         strong ("World Growth:"),"This page attempts to present a basic model to predict the number of new cases every day compared to the total number of cases the day before. The graphs can be used to compare the growth rate of reported, death or recovery cases across countries. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns.",br(),br(),
+                         strong ("World Ratio:"),"This page helps you to follow the death and recovery ratios across countries and over time. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns",br(),br(),
+                         strong ("AUS-US-CHN Day Zero"),"These graphs are very similar to World Day Zero, however, since the sub-region (province/state) data is available for some counntries we have provided the graph at the next level.",br(),br(),
+                         
+                         
+                         br(), br(),br(),
+                                strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                "The data is sourced from the code written by ",
+                                a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                
+                                strong("Feedback"),
+                                "Please contact us on ",
+                                a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),"."
+                         
+                         ),
+                
+                 
+                tabPanel("World - Explorer",
+                         
+                         fluidRow(
+                           
+                           column(6,
+                           strong("Description"),
+"On this page, you can plot a range of different indicators against each other. For example, if you want to generate a graph that shows number of deaths against the number of reported cases across countries, you can select for the x-axis, Confirmed Cases from X-measure, then choose Cumulative Cases, and then Actual, and for the y-axis select Death Cases, Cumulative and then Actual. This would then show you Death against Cases and so you can get a sense of changes in death rate across countries.
+You can change the list of countries included, this is an example for three countries."),
+column(6,
+       strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+       "The data is sourced from the code written by ",
+       a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+       a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+       
+       strong("Feedback"),
+       "Please contact us on ",
+       a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+       a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+
+
+                         ), br(),
+                         
+                         
+                           #  column(3, " "),
+                           
+                           fluidRow(
+                           column(2,
+                                  pickerInput(inputId = "country0",
+                                              label = "Country",
+                                              choices = dt$country_region %>% unique() %>% sort(),
+                                              selected = country_sorted_by_cases[1:2],
+                                              options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                             liveSearchStyle = 'contains'),
+                                              multiple= TRUE)),
+                           
+                           
+                           column(2,
+                                  pickerInput(inputId = "aspect_x",
+                                              label = "X - Measure",
+                                              choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                              selected = "Confirmed Cases",
+                                              multiple= FALSE)),
+                           
+                           
+                           column(2,             
+                                  pickerInput(inputId = "measure_x",
+                                              label = "X - Cumulative/New",
+                                              choices = c("Cumulative Cases", "New Cases"),
+                                              selected = "Cumulative Cases",
+                                              multiple= FALSE)),
+                           
+
+                           
+                           column(2,
+                                  pickerInput(inputId = "actual_x",
+                                              label = "X - Actual/Per Capita",
+                                              choices = c("Actual", "Per Capita (10 Million)"),
+                                              selected = "Actual",
+                                              multiple= FALSE))
+                           
+                           ), # close fluidrow
+                           
+                           
+                           fluidRow(
+                             column(2),
+                             
+                             column(2,
+                                    pickerInput(inputId = "aspect_y",
+                                                label = "Y - Measure",
+                                                choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                                selected = "Death Cases",
+                                                multiple= FALSE)),
+                             
+                             column(2,             
+                                    pickerInput(inputId = "measure_y",
+                                                label = "Y - Cumulative/New",
+                                                choices = c("Cumulative Cases", "New Cases"),
+                                                selected = "Cumulative Cases",
+                                                multiple= FALSE)),
+                             
+
+                             
+                             column(2,
+                                    pickerInput(inputId = "actual_y",
+                                                label = "Y - Actual/Per Capita",
+                                                choices = c("Actual", "Per Capita (10 Million)"),
+                                                selected = "Actual",
+                                                multiple= FALSE))), # close fluidrow
+                           br(),
+                         
+                         
+                         fluidRow(
+                           column(3),
+                           column(6,
+                                  plotOutput("plt_world_explore", height = "600px")),
+                           column(3))
+                        
+                         
+                ),
+                
+                
+                
+                 tabPanel("World - Day Zero",
+                  
+                          fluidRow(
+                            
+                            column(6,
+                                   strong("Description"),
+                                   "On this page, you can look at the trend for the number of new and total cases, both actual (left) and per capita (right, per 10 M of population). On the x-axis we the plot counts the number of days since the first case was reported in each country. Please notice that the y-axis is logged."),
+                            column(6,
+                                   strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                   "The data is sourced from the code written by ",
+                                   a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                   a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                   
+                                   strong("Feedback"),
+                                   "Please contact us on ",
+                                   a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                   a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                            
+                            
+                          ), br(),
+                          
+                          
+                          
+                          
+                          
+                 fluidRow(          
+                     column(2,
+                                   pickerInput(inputId = "country",
+                                               label = "Country",
+                                               choices = dt$country_region %>% unique() %>% sort(),
+                                               selected = country_sorted_by_cases[1:2],
+                                               options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                              liveSearchStyle = 'contains'),
+                                               multiple= TRUE)),
+  
+                      column(2,             
+                                   pickerInput(inputId = "measure",
+                                               label = "Cumulative/New",
+                                               choices = c("Cumulative Cases", "New Cases"),
+                                               selected = "Cumulative Cases",
+                                               multiple= FALSE)),
+                     
+                     column(2,
+                            pickerInput(inputId = "aspect",
+                                        label = "Measure",
+                                        choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                        selected = "Confirmed Cases",
+                                        multiple= FALSE))
+                            
+                     
+                     ),br(),
+                              
+
+                     fluidRow(         
+                         column(6,
+                                  plotOutput("plt_pass_day", height = "600px")),
+                         column(6,
+                                  plotOutput("plt_per_capita", height = "600px")))
+
+                 ),
+                
+                
+                tabPanel("World - Growth",
+                         
+                         
+                         fluidRow(
+                           
+                           column(6,
+                                  strong("Description"),
+                                  "This page helps you to follow the death and recovery ratios across countries and over time. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns."),
+                           column(6,
+                                  strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                  "The data is sourced from the code written by ",
+                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  
+                                  strong("Feedback"),
+                                  "Please contact us on ",
+                                  a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                  a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                           
+                           
+                         ), br(),
+                         
+                         
+                         fluidRow(          
+                           column(2,
+                                  pickerInput(inputId = "country2",
+                                              label = "Country",
+                                              choices = dt$country_region %>% unique() %>% sort(),
+                                              selected = country_sorted_by_cases[2:3],
+                                              options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                             liveSearchStyle = 'contains'),
+                                              multiple= TRUE)),
+                           
+                           column(2,
+                                  pickerInput(inputId = "aspect5",
+                                              label = "Measure",
+                                              choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                              selected = "Confirmed Cases",
+                                              multiple= FALSE)),
+                           
+                           column(2)
+                           
+                           
+                           
+                           ),br(),
+                         
+                         
+                         fluidRow(         
+                           column(6,
+                                  plotOutput("plt_pass_day_2", height = "600px")),
+                           column(6,
+                                  plotOutput("plt_per_capita_2", height = "600px")))
+                ),
+                
+                
+                tabPanel("World - Ratio",
+                         
+                         fluidRow(
+                           
+                           column(6,
+                                  strong("Description"),
+                                  "This page helps you to follow the death and recovery ratios across countries and over time. The plot on the left shows the death and the plot on the right provides the recovery ratio."),
+                           column(6,
+                                  strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                  "The data is sourced from the code written by ",
+                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  
+                                  strong("Feedback"),
+                                  "Please contact us on ",
+                                  a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                  a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                           
+                           
+                         ), br(),
+                         
+                         fluidRow(          
+                           column(2,
+                                  pickerInput(inputId = "country3",
+                                              label = "Country",
+                                              choices = dt$country_region %>% unique() %>% sort(),
+                                              selected = "Italy",
+                                              options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                             liveSearchStyle = 'contains'),
+                                              multiple= TRUE)),
+                           
+                           column(2),
+                           
+                           # column(2,
+                           #        pickerInput(inputId = "aspect6",
+                           #                    label = "Measure",
+                           #                    choices = c("Recovery Percentage", "Death Percentage"),
+                           #                    selected = "Recovery Percentage",
+                           #                    multiple= FALSE)),
+                           
+                           column(2)
+                           
+                           
+                           
+                         ),br(),
+                         
+                         
+                         fluidRow(         
+                           column(6,
+                                  plotOutput("plt_perc_recovery", height = "600px")),
+                           column(6,
+                                  plotOutput("plt_perc_death", height = "600px")))
+                ),
+                
+                
+                tabPanel("Australia - Day Zero",
+                         
+                         fluidRow(
+                           
+                           column(6,
+                                  strong("Description"),
+                                  "On this page, you can look at the trend for the number of new and total cases, both actual (left) and per capita (right, per 10 M of population). On the x-axis we the plot counts the number of days since the first case was reported in each country. Please notice that the y-axis is logged."),
+                           column(6,
+                                  strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                  "The data is sourced from the code written by ",
+                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  
+                                  strong("Feedback"),
+                                  "Please contact us on ",
+                                  a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                  a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                           
+                           
+                         ), br(),
+                         
+                         
+                         fluidRow(          
+                           
+                           column(2,
+                                  pickerInput(inputId = "austates",
+                                              label = "AU States",
+                                              choices = au_dt$state %>% unique() %>% sort(),
+                                              selected = au_dt$state %>% unique(),
+                                              options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                             liveSearchStyle = 'contains'),
+                                              multiple= TRUE)),
+                           column(2,             
+                                  pickerInput(inputId = "measure4",
+                                              label = "Cumulative/New",
+                                              choices = c("Cumulative Cases", "New Cases"),
+                                              selected = "Cumulative Cases",
+                                              multiple= FALSE)),
+                           
+                           column(2,
+                                  pickerInput(inputId = "aspect4",
+                                              label = "Measure",
+                                              choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                              selected = "Confirmed Cases",
+                                              multiple= FALSE))
+                           
+                         ),br(),
+                         
+                         
+                         fluidRow(         
+                           column(6,
+                                  # verbatimTextOutput("text"),
+                                  # br(),
+                                  plotOutput("plt_pass_day_au", height = "600px")),
+                           column(6,
+                                  plotOutput("plt_per_capita_au", height = "600px"))),br(),br(),
+                         
+                         
+                         
+                ),
+                
+                tabPanel("China - Day Zero",
+                         
+                         fluidRow(          
+                           
+                           column(2,
+                                  pickerInput(inputId = "chprov",
+                                              label = "CH Province",
+                                              choices = ch_dt$province %>% unique() %>% sort(),
+                                              selected = ch_dt$province %>% unique(),
+                                              options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                             liveSearchStyle = 'contains'),
+                                              multiple= TRUE)),
+                           column(2,             
+                                  pickerInput(inputId = "measure3",
+                                              label = "Cumulative/New",
+                                              choices = c("Cumulative Cases", "New Cases"),
+                                              selected = "Cumulative Cases",
+                                              multiple= FALSE)),
+                           
+                           column(2,
+                                  pickerInput(inputId = "aspect3",
+                                              label = "Measure",
+                                              choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                              selected = "Confirmed Cases",
+                                              multiple= FALSE)),
+                           
+                           column(6,
+                                  strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                  "The data is sourced from the code written by ",
+                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  
+                                  strong("Feedback"),
+                                  "Please contact us on ",
+                                  a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                  a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                           
+                         ),br(),
+                         
+                         
+                         fluidRow(         
+                           column(6,
+                                  plotOutput("plt_pass_day_ch", height = "600px")),
+                           column(6,
+                                  plotOutput("plt_per_capita_ch", height = "600px"))),br(),br(),
+                         
+                         
+                         
+                ),
+                
+                tabPanel("US States - Day Zero",
+                         
+                         fluidRow(          
+
+                           column(2,
+                                  pickerInput(inputId = "usstates",
+                                              label = "US States",
+                                              choices = us_dt$state %>% unique() %>% sort(),
+                                              selected = us_dt$state %>% unique(),
+                                              options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                             liveSearchStyle = 'contains'),
+                                              multiple= TRUE)),
+                           column(2,             
+                                  pickerInput(inputId = "measure2",
+                                              label = "Cumulative/New",
+                                              choices = c("Cumulative Cases", "New Cases"),
+                                              selected = "Cumulative Cases",
+                                              multiple= FALSE)),
+                           
+                           column(2,
+                                  pickerInput(inputId = "aspect2",
+                                              label = "Measure",
+                                              choices = c("Confirmed Cases", "Death Cases", "Recovered Cases"),
+                                              selected = "Confirmed Cases",
+                                              multiple= FALSE)),
+                           
+                           column(6,
+                                  strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                                  "The data is sourced from the code written by ",
+                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
+                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  
+                                  strong("Feedback"),
+                                  "Please contact us on ",
+                                  a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                                  a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                           
+                           ),br(),
+                         
+                         
+                         fluidRow(         
+                           column(6,
+                                  plotOutput("plt_pass_day_us", height = "600px")),
+                           column(6,
+                                  plotOutput("plt_per_capita_us", height = "600px"))),br(),br(),
+                         
+                         
+                         
+                )#,
+                
+                
+                # 
+                # tabPanel("Per Capita Map"#,
+                #        #  imageOutput("plt_map_per_capita"), 
+                #        #  imageOutput("plt_map_incident")
+                #          )
+                 
+                 
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+    
+  ### world explorer -----
+  
+  world_explore_dt <- reactive({
+    req(input$country0, input$measure_x, input$aspect_x, input$actual_x,  
+        input$measure_y, input$aspect_y, input$actual_y)
+    
+    filtered_data_explore(c = input$country0, xc = input$measure_x, xm =input$aspect_x, xa = input$actual_x, 
+                          yc = input$measure_y, ym = input$aspect_y, ya = input$actual_y)
+  })
+  
+  
+  
+  output$plt_world_explore <- renderPlot({
+    req(world_explore_dt(), input$measure_x, input$aspect_x, input$actual_x,  
+        input$measure_y, input$aspect_y, input$actual_y)
+    plot_explore_country(df = world_explore_dt(), 
+                         xc = input$measure_x, xm =input$aspect_x, xa = input$actual_x, 
+                         yc = input$measure_y, ym = input$aspect_y, ya = input$actual_y)
+  })
+  
+  
+  
+    ##### world page 1 day zero ------
+    pass_day_dt <- reactive({
+        req(input$country,input$aspect)
+
+        filtered_day_passed_data(c = input$country, a = input$aspect)
+
+    })
+    
+    
+    output$plt_pass_day <- renderPlot({
+        req(#input$level, 
+            input$measure, pass_day_dt(), input$aspect, tabinfo())
+           # ggplotly(
+      plot_day_passed_day(df = pass_day_dt(), m = input$measure, a = input$aspect, g = tabinfo()
+                                    )#, tooltip = "text") %>%
+            #    config(displayModeBar = TRUE) 
+    })
+    
+    output$plt_per_capita <- renderPlot({
+        req(#input$level, 
+            input$measure, pass_day_dt(), input$aspect, tabinfo())
+        # ggplotly(
+      plot_per_capita(df = pass_day_dt(), m = input$measure, a = input$aspect, g = tabinfo()
+        )#, tooltip = "text") %>%
+        #    config(displayModeBar = TRUE) 
+    })
+    
+    
+    
+    pass_day_dt2 <- reactive({
+      req(input$country2, input$aspect5)
+      
+      filtered_day_passed_data(c = input$country2, a = input$aspect5)
+      
+    })
+    
+    output$plt_pass_day_2 <- renderPlot({
+      req( pass_day_dt2(), a)
+      # ggplotly(
+      plot_new_cases_growth(df = pass_day_dt2(), a = input$aspect5
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+    output$plt_per_capita_2 <- renderPlot({
+      req( pass_day_dt2(),input$aspect5)
+      # ggplotly(
+      plot_new_case_growth_facet(df = pass_day_dt2(), a = input$aspect5
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+    
+    #### world recovery percent -------
+    
+    output$plt_perc_recovery <- renderPlot({
+      req(input$country3)
+      
+      plot_perc_rec(c = input$country3, r= "Recovery Percentage")
+    })
+    
+    output$plt_perc_death <- renderPlot({
+      req(input$country3)
+      
+      plot_perc_rec(c = input$country3, r= "Death Percentage")
+    })
+    
+    
+    
+    ##### find state analysis from here
+    # observe({ 
+    #   print(input$tab) 
+    #   }) 
+    
+    tabinfo <- reactive({
+      req(input$tab)
+      input$tab
+      
+    })
+    
+    # output$text <- renderPrint({
+    #   req(input$tab)
+    #   print(tabinfo())
+    #   })
+    
+    
+    ########## US HERE ----------
+    
+    
+    pass_day_dt_us <- reactive({
+      req(input$usstates, input$aspect2, tabinfo())
+      
+      filtered_state_data(s = input$usstates, a = input$aspect2, g = tabinfo())
+      
+    })
+    
+    output$plt_pass_day_us <- renderPlot({
+      req(#input$level, 
+        input$measure2, pass_day_dt_us(), input$aspect2, tabinfo())
+      # ggplotly(
+      plot_day_passed_day(df = pass_day_dt_us(), m = input$measure2, a = input$aspect2, g = tabinfo()
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+    output$plt_per_capita_us <- renderPlot({
+      req(#input$level, 
+        input$measure2, pass_day_dt_us(),input$aspect2, tabinfo())
+      # ggplotly(
+      plot_per_capita(df = pass_day_dt_us(), m = input$measure2, a = input$aspect2, g = tabinfo()
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+
+    
+    ########## AU HERE -------------
+    
+    pass_day_dt_au <- reactive({
+      req(input$austates, input$aspect4, tabinfo())
+      
+      filtered_state_data(s = input$austates, a = input$aspect4, g = tabinfo())
+      
+    })
+    
+    output$plt_pass_day_au <- renderPlot({
+      req(#input$level, 
+        input$measure4, pass_day_dt_au(), input$aspect4, tabinfo())
+      # ggplotly(
+      plot_day_passed_day(df = pass_day_dt_au(), m = input$measure4, a = input$aspect4, g = tabinfo()
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+    output$plt_per_capita_au <- renderPlot({
+      req(#input$level, 
+        input$measure4, pass_day_dt_au(), input$aspect4, tabinfo())
+      # ggplotly(
+      plot_per_capita(df = pass_day_dt_au(), m = input$measure4,  a = input$aspect4, g = tabinfo()
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+  
+
+    
+    ########## CH HERE-------------
+    
+    pass_day_dt_ch <- reactive({
+      req(input$chprov, input$aspect3, tabinfo())
+      
+      filtered_state_data(s = input$chprov, a = input$aspect3, g = tabinfo())
+      
+    })
+    
+    output$plt_pass_day_ch <- renderPlot({
+      req(#input$level, 
+        input$measure3, pass_day_dt_ch(),input$aspect3, tabinfo())
+      # ggplotly(
+      plot_day_passed_day(df = pass_day_dt_ch(), m = input$measure3, a = input$aspect3, g = tabinfo()
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+    output$plt_per_capita_ch <- renderPlot({
+      req(#input$level, 
+        input$measure3, pass_day_dt_ch(),input$aspect3, tabinfo())
+      # ggplotly(
+      plot_per_capita(df = pass_day_dt_ch(), m = input$measure3, a = input$aspect3, g = tabinfo()
+      )#, tooltip = "text") %>%
+      #    config(displayModeBar = TRUE) 
+    })
+    
+  # output$plt_map_per_capita <- renderImage({
+  #   
+  #   outfile <- tempfile(fileext='.gif') # temporary file will be removed later by renderImage
+  #   
+  #   plt <- ggplot()+
+  #     borders("world", colour="gray50", fill="gray90") +
+  #     geom_point(data = map_dt, alpha = 0.5, aes(x = Long, y = Lat, size = per_capita,
+  #                                                color = country_region)) +
+  #     scale_color_manual(values = country_color, guide = FALSE) +
+  #     scale_size_continuous(name = "Number of Cases", labels = si_vec)+
+  #     theme(legend.position = "bottom")+
+  #     transition_time(Date) +
+  #     labs(x = "Longitude", y = "Latitude", title = str_c("COVID-19 Cases Per 10 Million of Population Date: {frame_time}") )
+  #   
+  #   anim_save("outfile.gif", animate(plt, nframe = 50, fps = 5, height = 461, width = 644)) 
+  #   
+  #   list(src = "outfile.gif",contentType = 'image/gif')}, deleteFile = TRUE)
+  #   
+  #   
+  # output$plt_map_incident <- renderImage({
+  #   
+  #   outfile <- tempfile(fileext='.gif') # temporary file will be removed later by renderImage
+  #   
+  #   plt <- ggplot()+
+  #     borders("world", colour="gray50", fill="gray90") +
+  #     geom_point(data = map_dt, alpha = 0.5, aes(x = Long, y = Lat, size = per_capita,
+  #                                                color = country_region)) +
+  #     scale_color_manual(values = country_color, guide = FALSE) +
+  #     scale_size_continuous(name = "Number of Cases", labels = si_vec)+
+  #     theme(legend.position = "bottom")+
+  #     transition_time(Date) +
+  #     labs(x = "Longitude", y = "Latitude", title = str_c("COVID-19 Incident Cases Date: {frame_time}") )
+  #   
+  #   anim_save("outfile.gif", animate(plt, nframe = 50, fps = 5, height = 461, width = 644)) 
+  #   
+  #   list(src = "outfile.gif",contentType = 'image/gif')}, deleteFile = TRUE)
+  
+  
+    
+    
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+
+
+
+

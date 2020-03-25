@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1585144415208.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4190093984",
+    "id" : "65CE5D17",
+    "lastKnownWriteTime" : 1585117567,
+    "last_content_update" : 1585117567,
+    "path" : "~/Dropbox/COVID_19/R/2. world_bank_data.R",
+    "project_path" : "R/2. world_bank_data.R",
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

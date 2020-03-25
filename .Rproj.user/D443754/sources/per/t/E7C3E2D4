@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1584585288248.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1715324085",
+    "id" : "E7C3E2D4",
+    "lastKnownWriteTime" : 1584587259,
+    "last_content_update" : 1584587259893,
+    "path" : "C:/Users/behroozh/Dropbox/COVID_19/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "17,13",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,108 @@
+## test world bank data
+
+
+pull_worldbank_data <- function(vars) {
+  new_cache <- wbcache()
+  all_vars <- as.character(unique(new_cache$indicators$indicatorID))
+  data_wide <- wb(indicator = vars, mrv = 10, return_wide = TRUE)
+  new_cache$indicators[new_cache$indicators[,"indicatorID"] %in% vars, ] %>%
+    rename(var_name = indicatorID) %>%
+    mutate(var_def = paste(indicator, "\nNote:",
+                           indicatorDesc, "\nSource:", sourceOrg)) %>%
+    select(var_name, var_def) -> wb_data_def
+  new_cache$countries %>%
+    select(iso3c, iso2c, country, region, income) -> ctries
+  left_join(data_wide, ctries, by = "iso3c") %>%
+    rename(year = date,
+           iso2c = iso2c.y,
+           country = country.y) %>%
+    select(iso3c, iso2c, country, region, income, everything()) %>%
+    select(-iso2c.x, -country.x) %>%
+    filter(!is.na(NY.GDP.PCAP.KD),
+           region != "Aggregates") -> wb_data
+  wb_data$year <- as.numeric(wb_data$year)
+  wb_data_def<- left_join(data.frame(var_name = names(wb_data),
+                                     stringsAsFactors = FALSE),
+                          wb_data_def, by = "var_name")
+  wb_data_def$var_def[1:19] <- c(
+    "Three letter ISO country code as used by World Bank",
+    "Two letter ISO country code as used by World Bank",
+    "Country name as used by World Bank",
+    "World Bank regional country classification",
+    "World Bank income group classification",
+    "Calendar year of observation",
+    "Hospital beds (per 1,000 people)",
+    "Urban population (% of total population)",
+    "Population ages 65 and above (% of total population)",
+    "Death rate, crude (per 1,000 people)",
+    "Unemployment, total (% of total labor force) (modeled ILO estimate)",
+    "Incidence of tuberculosis (per 100,000 people)",
+    "GDP per capita growth (annual %)",
+    "Imports of goods and services (% of GDP)",
+    "Population living in slums (% of urban population)",
+    "Personal remittances, received (current US$)",
+    "Specialist surgical workforce (per 100,000 population)",
+    "Nurses and midwives (per 1,000 people)",
+    "Physicians (per 1,000 people)")
+  wb_data_def$type = c("cs_id", rep("factor",  4), "ts_id",
+                       rep("numeric", ncol(wb_data) - 6))
+  return(list(wb_data, wb_data_def))
+}
+
+vars <- c("SP.POP.TOTL", "AG.LND.TOTL.K2", "EN.POP.DNST", 
+          "EN.URB.LCTY", "SP.DYN.LE00.IN", "NY.GDP.PCAP.KD",
+          "SH.MED.BEDS.ZS", "SP.URB.TOTL.IN.ZS","SP.POP.65UP.TO.ZS",
+          "SP.DYN.CDRT.IN", 
+          "SL.UEM.TOTL.ZS", "SH.TBS.INCD",
+          "NY.GDP.PCAP.KD.ZG", "NE.IMP.GNFS.ZS",
+          "EN.POP.SLUM.UR.ZS","BX.TRF.PWKR.CD.DT",
+          "SH.MED.SAOP.P5","SH.MED.NUMW.P3",
+          "SH.MED.PHYS.ZS")
+wb_list <- pull_worldbank_data(vars)
+wb_data <- wb_list[[1]]
+wb_data_def <- wb_list[[2]]
+
+wb_cs <- 
+wb_data %>%
+  group_by(iso2c, country, region, income) %>%
+  arrange(iso2c, year) %>%
+  summarise(
+    population = last(na.omit(SP.POP.TOTL)),
+    land_area_skm = ifelse(identical(na.omit(AG.LND.TOTL.K2), logical(0)), NA, last(na.omit(AG.LND.TOTL.K2))),
+    pop_density = ifelse(identical(na.omit(EN.POP.DNST), logical(0)), NA, last(na.omit(EN.POP.DNST))),
+    pop_largest_city = ifelse(identical(na.omit(EN.URB.LCTY), logical(0)), NA, last(na.omit(EN.URB.LCTY))), 
+    gdp_capita = ifelse(identical(na.omit(SP.DYN.LE00.IN), logical(0)), NA, last(na.omit(SP.DYN.LE00.IN))),
+    life_expectancy = ifelse(identical(na.omit(NY.GDP.PCAP.KD), logical(0)), NA, last(na.omit(NY.GDP.PCAP.KD))),
+    hospital_bed = ifelse(identical(na.omit(SH.MED.BEDS.ZS), logical(0)), NA, last(na.omit(SH.MED.BEDS.ZS))),
+    urban_pop = ifelse(identical(na.omit(SP.URB.TOTL.IN.ZS), logical(0)), NA, last(na.omit(SP.URB.TOTL.IN.ZS))),
+    pop_age_65 = ifelse(identical(na.omit(SP.POP.65UP.TO.ZS), logical(0)), NA, last(na.omit(SP.POP.65UP.TO.ZS))),
+  #  death_crude = ifelse(identical(na.omit(SP.DYN.CDRT.IN), logical(0)), NA, last(na.omit(SP.DYN.CDRT.IN))),
+    unemployment = ifelse(identical(na.omit(SL.UEM.TOTL.ZS), logical(0)), NA, last(na.omit(SL.UEM.TOTL.ZS))),
+    tuberculosis = ifelse(identical(na.omit(SH.TBS.INCD), logical(0)), NA, last(na.omit(SH.TBS.INCD))),
+    gdp_per_capita_growth = ifelse(identical(na.omit(NY.GDP.PCAP.KD.ZG), logical(0)), NA, last(na.omit(NY.GDP.PCAP.KD.ZG))),
+    import_goods = ifelse(identical(na.omit(NE.IMP.GNFS.ZS), logical(0)), NA, last(na.omit(NE.IMP.GNFS.ZS))),
+    pop_slum = ifelse(identical(na.omit(EN.POP.SLUM.UR.ZS), logical(0)), NA, last(na.omit(EN.POP.SLUM.UR.ZS))),
+    remittances = ifelse(identical(na.omit(BX.TRF.PWKR.CD.DT), logical(0)), NA, last(na.omit(BX.TRF.PWKR.CD.DT))),
+    specialists = ifelse(identical(na.omit(SH.MED.SAOP.P5), logical(0)), NA, last(na.omit(SH.MED.SAOP.P5))),
+  #  nurse = ifelse(identical(na.omit(SH.MED.NUMW.P3), logical(0)), NA, last(na.omit(SH.MED.NUMW.P3))),
+    physicians = ifelse(identical(na.omit(SH.MED.PHYS.ZS), logical(0)), NA, last(na.omit(SH.MED.PHYS.ZS)))
+    ) %>% 
+  ungroup()
+
+
+country_code <- read_excel("data/country_code.xlsx") 
+
+# setdiff(region_country_list$country_region,country_code$Country )
+
+wb_dt <- wb_cs %>% 
+  right_join(country_code, by = c("iso2c" = "Alpha-2 code")) %>% 
+  filter(!is.na(country)) %>% 
+  select(Country, region, income, population:hospital_bed) %>% 
+  right_join(dt %>% filter(province_state == country_region), by = c("Country" = "country_region")) 
+
+
+write_csv(wb_dt, "data/wb_data.csv")
+
+
+
+

@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1583884750977.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "24|71|70|0|\n72|71|98|0|\n100|32|137|0|\n142|53|170|0|\n173|55|218|0|\n220|51|272|0|\n282|23|294|0|\n300|50|332|0|\n345|55|388|0|\n393|42|436|0|\n480|24|522|0|\n524|23|526|0|\n",
+    "hash" : "3741029922",
+    "id" : "4A9F9D87",
+    "lastKnownWriteTime" : 1585026653,
+    "last_content_update" : 1585026653482,
+    "path" : "~/Dropbox/COVID_19/R/1. functions.R",
+    "project_path" : "R/1. functions.R",
+    "properties" : {
+        "cursorPosition" : "596,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

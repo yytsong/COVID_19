@@ -1,0 +1,13 @@
+name: COVID19
+title: COVID19
+username:
+account: behroozh
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1933279
+bundleId: 2924493
+url: https://behroozh.shinyapps.io/COVID19/
+when: 1585169381.00402
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Icon|www/image1.png|www/image2.png|Other
