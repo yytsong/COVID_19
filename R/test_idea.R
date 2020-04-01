@@ -162,6 +162,69 @@ legend(x=1.4, y=1, legend = rownames(plt_radar_dt[-c(1,2),]), bty = "n", pch=20 
 
 
 
+### find correlation 
+
+library(corrplot)
+source("http://www.sthda.com/upload/rquery_cormat.r")  ##To use the rquery.cormat function, you can source it
+
+
+head(wb_dt)
+
+
+cordt <- wb_dt %>% 
+  group_by(Country) %>% 
+  filter(Date == max(Date)) %>% 
+  ungroup() %>% 
+  select_if(is.numeric) %>% 
+  select(-c(death_cases, recovered_cases, active_cases)) 
+
+#rquery.cormat(select_if(wb_dt, is.numeric))
+res <- cor(cordt, use = "pairwise", method = "pearson")
+round(res,2)
+
+
+library(Hmisc)
+
+res2 <- rcorr(as.matrix(cordt))
+res2
+  
+
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+  )
+}
+
+flattenCorrMatrix(res2$r, res2$P) %>% 
+  filter(column == "confirmed_cases", !is.na(cor)) %>% 
+  arrange(desc(cor))
+
+
+
+library(corrr)
+cordt %>% 
+  correlate() %>% 
+  focus(confirmed_cases)
+
+
+
+
+# 
+# select_if(wb_dt, is.numeric) %>% 
+#   correlate() %>% 
+#   rearrange() %>% 
+#   shave()
+
+
+
+
+
+
+
 
 
 

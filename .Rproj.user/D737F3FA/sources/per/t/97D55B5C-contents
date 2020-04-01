@@ -36,19 +36,13 @@ pop <- fread("data/world_pop.csv") %>%
 # setdiff(unique(pop$Country), unique(wp_region$Country))
 
 
-# data collected by John Hopkins University
-jhu_url_confirmed <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
-                 "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-                 "time_series_covid19_confirmed_global.csv", sep = "")
-#time_series_covid19_confirmed_global
+# # # data collected by John Hopkins University
 
-jhu_url_deaths <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
-                 "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-                 "time_series_covid19_deaths_global.csv", sep = "")
+### github projec from JHU https://github.com/CSSEGISandData/COVID-19
+jhu_url_confirmed <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+jhu_url_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+jhu_url_recovered <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 
-jhu_url_recovered <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
-                        "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-                        "time_series_19-covid-Recovered.csv", sep = "")
 
 # jhu_url_recovered <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"
 
@@ -99,6 +93,9 @@ dt_recovered <- read_csv(jhu_url_recovered) %>%
          )) %>% 
   arrange(country_region, province_state, as.character(Date)) %>% 
   as.data.table()
+
+
+recovery_latest_day <- dt_recovered$Date %>% max()
 
 # dt_recovered <- read.csv(jhu_url_recovered, header = TRUE) %>% 
 #   mutate(recovered_cases =as.double(recovered_cases)) %>% 
@@ -163,7 +160,7 @@ dt <- read_csv(jhu_url_confirmed) %>%
 
 
 
-
+latest_date <- max(dt$Date)
 
 
 
@@ -268,7 +265,19 @@ rc_dictionary <- setNames(rc_list$Region, rc_list$Continent)
 # setdiff(dt$country_region,wb_dt$Country )
 #  setdiff(wb_dt$Country,dt$country_region )
 
-wb_dt <- fread("data/wb_data.csv")
+dt_country <- dt %>% 
+  group_by(Continent, country_region, Date) %>% 
+  summarise_at(vars(confirmed_cases, death_cases, recovered_cases), ~ sum(., na.rm = TRUE))
+
+wb_dt <- fread("data/wb_data_2020-03-26.csv") %>% 
+  right_join(dt_country, by = c("Country" = "country_region"))  %>% 
+  filter(confirmed_cases > 0) %>% 
+  group_by(Country) %>% 
+  mutate(first_day = min(Date), days = Date - first_day + 1) %>% 
+  ungroup() %>% 
+  mutate(active_cases = confirmed_cases - death_cases - recovered_cases)
+
+# wb_dt %>% write_csv("other/behrooz_wb_dt.csv")  
 
 
 

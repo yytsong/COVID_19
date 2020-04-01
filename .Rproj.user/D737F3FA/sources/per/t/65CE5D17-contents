@@ -1,5 +1,7 @@
 ## test world bank data
-
+## source code https://www.r-bloggers.com/tidying-the-new-johns-hopkins-covid-19-time-series-datasets/
+## package used library(wbstats)
+## this script is only required to run once in a while, and dt will be joint in 0. load_data_jhu.R
 
 pull_worldbank_data <- function(vars) {
   new_cache <- wbcache()
@@ -52,11 +54,9 @@ pull_worldbank_data <- function(vars) {
 vars <- c("SP.POP.TOTL", "AG.LND.TOTL.K2", "EN.POP.DNST", 
           "EN.URB.LCTY", "SP.DYN.LE00.IN", "NY.GDP.PCAP.KD",
           "SH.MED.BEDS.ZS", "SP.URB.TOTL.IN.ZS","SP.POP.65UP.TO.ZS",
-          "SP.DYN.CDRT.IN", 
-          "SL.UEM.TOTL.ZS", "SH.TBS.INCD",
-          "NY.GDP.PCAP.KD.ZG", "NE.IMP.GNFS.ZS",
-          "EN.POP.SLUM.UR.ZS","BX.TRF.PWKR.CD.DT",
-          "SH.MED.SAOP.P5","SH.MED.NUMW.P3",
+          "SP.DYN.CDRT.IN", "SL.UEM.TOTL.ZS", "SH.TBS.INCD",
+          "NY.GDP.PCAP.KD.ZG", "NE.IMP.GNFS.ZS","EN.POP.SLUM.UR.ZS",
+          "BX.TRF.PWKR.CD.DT", "SH.MED.SAOP.P5","SH.MED.NUMW.P3",
           "SH.MED.PHYS.ZS")
 wb_list <- pull_worldbank_data(vars)
 wb_data <- wb_list[[1]]
@@ -76,7 +76,7 @@ wb_data %>%
     hospital_bed = ifelse(identical(na.omit(SH.MED.BEDS.ZS), logical(0)), NA, last(na.omit(SH.MED.BEDS.ZS))),
     urban_pop = ifelse(identical(na.omit(SP.URB.TOTL.IN.ZS), logical(0)), NA, last(na.omit(SP.URB.TOTL.IN.ZS))),
     pop_age_65 = ifelse(identical(na.omit(SP.POP.65UP.TO.ZS), logical(0)), NA, last(na.omit(SP.POP.65UP.TO.ZS))),
-  #  death_crude = ifelse(identical(na.omit(SP.DYN.CDRT.IN), logical(0)), NA, last(na.omit(SP.DYN.CDRT.IN))),
+   death_crude = ifelse(identical(na.omit(SP.DYN.CDRT.IN), logical(0)), NA, last(na.omit(SP.DYN.CDRT.IN))),
     unemployment = ifelse(identical(na.omit(SL.UEM.TOTL.ZS), logical(0)), NA, last(na.omit(SL.UEM.TOTL.ZS))),
     tuberculosis = ifelse(identical(na.omit(SH.TBS.INCD), logical(0)), NA, last(na.omit(SH.TBS.INCD))),
     gdp_per_capita_growth = ifelse(identical(na.omit(NY.GDP.PCAP.KD.ZG), logical(0)), NA, last(na.omit(NY.GDP.PCAP.KD.ZG))),
@@ -84,10 +84,16 @@ wb_data %>%
     pop_slum = ifelse(identical(na.omit(EN.POP.SLUM.UR.ZS), logical(0)), NA, last(na.omit(EN.POP.SLUM.UR.ZS))),
     remittances = ifelse(identical(na.omit(BX.TRF.PWKR.CD.DT), logical(0)), NA, last(na.omit(BX.TRF.PWKR.CD.DT))),
     specialists = ifelse(identical(na.omit(SH.MED.SAOP.P5), logical(0)), NA, last(na.omit(SH.MED.SAOP.P5))),
-  #  nurse = ifelse(identical(na.omit(SH.MED.NUMW.P3), logical(0)), NA, last(na.omit(SH.MED.NUMW.P3))),
+   nurse = ifelse(identical(na.omit(SH.MED.NUMW.P3), logical(0)), NA, last(na.omit(SH.MED.NUMW.P3))),
     physicians = ifelse(identical(na.omit(SH.MED.PHYS.ZS), logical(0)), NA, last(na.omit(SH.MED.PHYS.ZS)))
     ) %>% 
-  ungroup()
+  ungroup() %>% 
+  mutate(hospital_bed = hospital_bed * population/1000,
+         death_crude = death_crude * population/1000,
+         tuberculosis = tuberculosis * population/100000,
+         specialists = specialists * population/100000,
+         nurse = nurse * population/1000,
+         physicians = physicians * population/1000)
 
 
 country_code <- read_excel("data/country_code.xlsx") 
@@ -97,11 +103,10 @@ country_code <- read_excel("data/country_code.xlsx")
 wb_dt <- wb_cs %>% 
   right_join(country_code, by = c("iso2c" = "Alpha-2 code")) %>% 
   filter(!is.na(country)) %>% 
-  select(Country, region, income, population:hospital_bed) %>% 
-  right_join(dt %>% filter(province_state == country_region), by = c("Country" = "country_region")) 
+  select(Country, region, income, population:physicians) 
 
 
-write_csv(wb_dt, "data/wb_data.csv")
+write_csv(wb_dt, str_c("data/wb_data_", Sys.Date(), ".csv"))
 
 
 

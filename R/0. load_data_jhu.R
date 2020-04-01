@@ -311,13 +311,14 @@ dt_country <- dt %>%
   group_by(Continent, country_region, Date) %>% 
   summarise_at(vars(confirmed_cases, death_cases, recovered_cases), ~ sum(., na.rm = TRUE))
 
-wb_dt <- fread("data/wb_data_2020-03-31.csv") %>% 
+wb_dt <- fread("data/wb_data_2020-04-02.csv") %>% 
   right_join(dt_country, by = c("Country" = "country_region"))  %>% 
   filter(confirmed_cases > 0) %>% 
   group_by(Country) %>% 
   mutate(first_day = min(Date), days = Date - first_day + 1) %>% 
   ungroup() %>% 
-  mutate(active_cases = confirmed_cases - death_cases - recovered_cases)
+  mutate(active_cases = confirmed_cases - death_cases - recovered_cases) %>% 
+  mutate_if(is.logical, as.numeric)
 
 # wb_dt %>% write_csv(str_c("other/behrooz_wb_dt_", Sys.Date(),".csv"))  
 

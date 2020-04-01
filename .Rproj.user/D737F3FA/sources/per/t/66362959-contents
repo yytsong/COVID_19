@@ -1,6 +1,6 @@
 # prepare data
 
-# c <-c("China", "Australia", "US", "Russia", "UK", "South Korea")
+# c <-c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
 # #dt$country_region %>% unique()
 # p <- dt %>% filter(country_region %in% c) %>% distinct(province_state) %>% pull()
 # m <- "Cumulative Cases"
@@ -89,9 +89,9 @@ plot_explore_country <- function(df, xc, xm, xa, yc, ym, ya, min_case){
           axis.title = element_text(size = 13),
           title = element_text(size = 14))+
     scale_colour_manual(values = country_color)+  
-    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"),
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
           x = str_c(xm, xc, xa, "Log Scale",sep = " - "),
-          title = str_c ("COVID-19 - Since Number of Confirmed Cases >= ",min_case," @ ", Sys.time()," AEDT", "\n","(XY-axis are logged)"),
+          title = str_c ("COVID-19 - Since Number of Confirmed Cases >= ",min_case," @ ", latest_date," AEDT", "\n","(XY-axis are logged)"),
           y = str_c(ym, yc, ya,  "Log Scale", sep = " - "))+
     scale_y_log10(labels = si_vec, breaks = scale_breaks)+
     scale_x_log10(labels = si_vec, breaks = scale_breaks)
@@ -131,9 +131,9 @@ plot_world_lvl <- function(lvl){
     scale_x_continuous()+
     theme(legend.position = "none")+
     labs(x = "Days since the First Case Reported from each Country", 
-         y = str_c("Confirmed Cases Per Capita"),
-         title = str_c ("COVID-19 Cases by ", lvl, " @ ", Sys.time()," AEDT", "\n","(Y-axis is logged)"),
-         caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"))
+         y = str_c("Confirmed Cases Per Capita (10M)"),
+         title = str_c ("COVID-19 Cases Per Capita (10M) by ", lvl, " @ ", latest_date," AEDT", "\n","(Y-axis is logged)"),
+         caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"))
     
 }
 
@@ -179,11 +179,11 @@ plot_day_passed_day <- function(df, m, a, g, min_case){
     measure_s <- sym("incident_cases")
   }
   
- if("world" %in% g){
+ if(g == "world"){
     group_var <- sym("country_region")
     xtitle <- "Country"
     cs_color <- country_color
- }else{
+ }else if(g == "other"){
    group_var <- sym("state")
    xtitle <- "State/Province"
    cs_color <- state_color
@@ -210,9 +210,9 @@ plot_day_passed_day <- function(df, m, a, g, min_case){
           axis.title = element_text(size = 13),
           title = element_text(size = 14))+
     scale_colour_manual(values = cs_color)+  
-    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"),
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
           x = str_c("Days since ", m, " >= ", min_case, " from each ", xtitle, sep = ""),
-          title = str_c ("COVID-19 ", a, " @ ", Sys.time()," AEDT", "\n","(Y-axis is logged)"),
+          title = str_c ("COVID-19 ", a, " @ ", latest_date," AEDT", "\n","(Y-axis is logged)"),
           y = "Number of Reported Cases - Log Scale")+
     scale_y_log10(labels = si_vec, breaks = scale_breaks)
   
@@ -263,9 +263,9 @@ plot_per_capita <- function(df, m, a, g, min_case){
     scale_colour_manual(values = cs_color)+  
     labs (
       #subtitle  = str_c("By: @behrooz_hm @yurisyt"),
-      caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"),
+      caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
       x = str_c("Days since ", m, " >= ", min_case, " from each ", xtitle, sep = ""),
-      title = str_c ("Per Capita COVID-19 ", a, " @ ", Sys.time()," AEDT", "\n","(Y-axis is logged)"),
+      title = str_c ("Per Capita COVID-19 ", a, " @ ", latest_date," AEDT", "\n","(Y-axis is logged)"),
       y = "Number of Reported Cases Per 10 Million of Population - Log Scale")
   
   
@@ -325,9 +325,9 @@ plot_new_cases_growth <- function(df,a, min_case){
           axis.title = element_text(size = 13),
           title = element_text(size = 14))+
     scale_colour_manual(values = country_color)+  
-    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"),
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
           x = "Number of Cumulative Cases Per 10 Million Population - Log Scale",
-          title = str_c ("COVID-19 ", a, " (since ", min_case ," Cases) Growth Rate @ ", Sys.time()," AEDT", "\n",lm_eqn(df = df_new), "(XY-axis is logged)"),
+          title = str_c ("COVID-19 ", a, " (since ", min_case ," Cases) Growth Rate @ ", latest_date," AEDT", "\n",lm_eqn(df = df_new), "(XY-axis is logged)"),
           y = "Number of Reported Cases Next Day Per 10 Million Population - Log Scale")
   
 }
@@ -379,9 +379,9 @@ plot_new_case_growth_facet <- function(df,a, min_case){
           panel.background = element_blank(),
           strip.text.x = element_text(size = 13))+
     #scale_colour_manual(values = country_color)+  
-    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"),
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
           x = "Number of Cumulative Cases Per 10 Million Population - Log Scale",
-          title = str_c ("COVID-19 ", a, " (since ", min_case, " Cases) Growth Rate @ ", Sys.time()," AEDT", "\n","(XY-axis is logged)", " Dashed Red Line Represents 10% Daily Growth."),
+          title = str_c ("COVID-19 ", a, " (since ", min_case, " Cases) Growth Rate @ ", latest_date," AEDT", "\n","(XY-axis is logged)", " Dashed Red Line Represents 10% Daily Growth."),
           y = "Number of Reported Cases Next Day Per 10 Million Population - Log Scale") +
     facet_wrap(~ country_region, scale = "free")
   
@@ -428,9 +428,9 @@ plot_perc_rec <- function(c, r, min_case){
           axis.title = element_text(size = 13),
           title = element_text(size = 14))+
     scale_colour_manual(values = country_color)+  
-    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt  (Monash University) / Data: Tim Churches (UNSW) & Johns Hopkins University"),
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt  (Monash University) / Data: Johns Hopkins University"),
           x = str_c("Cases Per Capita Per 10 Million Population - Log Scale"),
-          title = str_c ("COVID-19 - Since Number of Confirmed Cases >= ", min_case," @ ", Sys.time()," AEDT", "\n","(X-axis is logged)"),
+          title = str_c ("COVID-19 - Since Number of Confirmed Cases >= ", min_case," @ ", latest_date," AEDT", "\n","(X-axis is logged)"),
           y = ytitle)+
     scale_y_continuous(labels = percent)+
     scale_x_log10(labels = si_vec, breaks = scale_breaks)
@@ -579,18 +579,116 @@ c25 <- rep (c(
 names(c25) <- country_sorted_by_cases 
 country_color <- c25[1:length(country_sorted_by_cases)]
 
-
 names(c25) <- c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases) 
 state_color <- c25[1:length(c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases))]
 
-# names(c25) <- au_state_sorted_by_cases 
-# au_state_color <- c25[1:length(au_state_sorted_by_cases)]
-# 
-# 
-# names(c25) <- ch_state_sorted_by_cases 
-# ch_state_color <- c25[1:length(ch_state_sorted_by_cases)]
 
+
+# scales of plots
 
 scale_breaks <- c(0,5,10,25,50,100,250,500,1000,2500,5000, 10000,25000,50000,100000,250000)
+# reverselog_trans <- function(base = exp(1)) { 
+#   trans <- function(x) -log(x, base) 
+#   inv <- function(x) base^(-x) 
+#   scales::trans_new(paste0("reverselog-", format(base)), trans, inv, 
+#                     scales::log_breaks(base = base), domain = c(1e-100, Inf)) 
+# }
+
+
+### world bank plots from here
+
+plot_health_measure <- function(c, m){
+  # m <- "hospital_bed"
+  
+  measure_s <- sym(m)
+  
+  if(m == "hospital_bed"){
+    ytitle <- "Hospital Beds"
+  }else if(m == "physicians"){
+    ytitle <- "Physicians"
+  }else if(m == "specialists"){
+    ytitle <- "Specialists"
+  }else if(m == "nurse"){
+    ytitle <- "Nurse"
+  }
+  
+  
+  
+  
+  df <- wb_dt %>% 
+    filter(Country %in% c) %>% 
+    mutate(yvar =  !!measure_s / active_cases)
+  
+  df_end <- df %>% 
+    group_by(Country) %>% 
+    filter(Date == max(Date)) %>% 
+    ungroup()
+  
+  num_of_days <- max(df$days) +3
+  
+  df %>% 
+    ggplot(aes(x = days, y = yvar, group = Country, color = Country))+
+    geom_line()+
+    geom_point(size = 0.4)+
+    geom_text_repel(data = df_end, aes(label = Country), size = 5, min.segment.length = 0)+
+    scale_x_continuous(limits = c(0, num_of_days)) +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 9),
+          axis.title = element_text(size = 10),
+          title = element_text(size = 11))+
+    scale_colour_manual(values = country_color)+
+    scale_y_log10(labels = si_vec)+
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
+          x = str_c("Days since First Confirmed Case from each Country", sep = ""),
+          title = str_c ("COVID-19 ", ytitle, " per Active Case @ ", latest_date," AEDT", "\n","(Y-axis is logged)"),
+          y = str_c("Number of ", ytitle, " per Active Case"))
+  
+}
+
+
+plot_death_crude <- function(c, m){
+  
+  if(m == "new"){
+    measure_s <- sym("daily_death_rate")
+    ytitle <- "Daily Death Cases / Average Daily Crude Deaths"
+  }else if(m == "cumulative"){
+    measure_s <- sym("annual_death_rate")
+    ytitle <- "Cumulative Death Cases / Average Daily Crude Deaths"
+  }
+  
+  df <- wb_dt %>% 
+    filter(Country %in% c) %>% 
+    mutate(daily_death_cases = ifelse(is.na(lag(death_cases)), death_cases, death_cases - lag(death_cases))) %>% 
+    mutate(daily_death_rate =  daily_death_cases / (death_crude/365),
+           annual_death_rate = death_cases / (death_crude / 365))
+  
+  df_end <- df %>% 
+    group_by(Country) %>% 
+    filter(Date == max(Date)) %>% 
+    ungroup()
+  
+  num_of_days <- max(df$days) +3
+  
+  df %>% 
+    ggplot(aes(x = days, y = !!measure_s, group = Country, color = Country))+
+    geom_line()+
+    geom_point(size = 0.4)+
+    geom_text_repel(data = df_end, aes(label = Country), size = 5, min.segment.length = 0)+
+    scale_x_continuous(limits = c(0, num_of_days)) +
+    theme(legend.position = "none",
+          axis.text = element_text(size = 9),
+          axis.title = element_text(size = 10),
+          title = element_text(size = 11))+
+    scale_colour_manual(values = country_color)+
+    scale_y_log10(labels = comma_format(accuracy = .01), breaks = c(0.01, 0.05, 0.1, 0.5, 1, 2,4))+
+    #  scale_y_log10(labels = si_vec, reverse = TRUE)+  
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
+          x = str_c("Days since First Confirmed Case from each Country", sep = ""),
+          title = str_c ("COVID-19 ", ytitle, "\n","@ ", latest_date," AEDT", " (Y-axis is logged)"),
+          y = ytitle)
+  
+}
+
+
 
 

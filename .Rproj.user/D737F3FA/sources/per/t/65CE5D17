@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "4190093984",
+    "hash" : "700283042",
     "id" : "65CE5D17",
-    "lastKnownWriteTime" : 1585117567,
-    "last_content_update" : 1585117567,
+    "lastKnownWriteTime" : 1585186115,
+    "last_content_update" : 1585186115,
     "path" : "~/Dropbox/COVID_19/R/2. world_bank_data.R",
     "project_path" : "R/2. world_bank_data.R",
     "properties" : {
+        "cursorPosition" : "37,35",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [

@@ -106,17 +106,49 @@ wb_data %>%
 
 
 country_code <- read_excel("data/country_code.xlsx")  %>% 
-  select(Country, `Alpha-2 code`)
+  select(Country, `Alpha-2 code`, `Alpha-3 code`)
 
 # setdiff(region_country_list$country_region,country_code$Country )
 
 wb_dt <- wb_cs %>% 
   right_join(country_code, by = c("iso2c" = "Alpha-2 code")) %>% 
-  filter(!is.na(country)) %>% 
+  filter(!is.na(country)) 
+
+
+
+### new heath measures
+
+
+files <- list.files(path = "~/Dropbox/COVID_19/Other/Explore/", pattern = ".csv")
+
+clean_a_file <- function(filename){
+  # file <- files[2]
+  
+  dt1 <- fread(str_c("~/Dropbox/COVID_19/Other/Explore/",filename)) %>% 
+    group_by(Code) %>% 
+    filter(Year == max(Year)) %>% 
+    ungroup() %>% 
+    select(-c(Entity, Year)) %>% 
+    mutate_all(na_if,"") %>% 
+    filter(!is.na(Code)) %>% 
+    as.data.table()
+  
+  print(str_c(filename, " is completed ..."))
+  dt1
+  
+}
+
+
+add_wb <- 
+  map(files,clean_a_file) %>% 
+  reduce(left_join, by = "Code")
+
+
+wb_dt_final <- wb_dt %>% 
+  left_join(add_wb, by =c("Alpha-3 code"="Code")) %>% 
   select(Country, region, income, population:ncol(.)) 
 
-
-write_csv(wb_dt, str_c("data/wb_data_", Sys.Date(), ".csv"))
+write_csv(wb_dt_final, str_c("data/wb_data_", Sys.Date(), ".csv"))
 
 
 

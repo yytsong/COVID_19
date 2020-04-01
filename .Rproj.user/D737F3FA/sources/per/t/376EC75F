@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "940627930",
+    "hash" : "2031502833",
     "id" : "376EC75F",
-    "lastKnownWriteTime" : 1585146124,
-    "last_content_update" : 1585146124191,
+    "lastKnownWriteTime" : 1585228232,
+    "last_content_update" : 1585228232924,
     "path" : "~/Dropbox/COVID_19/app.R",
     "project_path" : "app.R",
     "properties" : {
-        "cursorPosition" : "60,217",
-        "scrollLine" : "55"
+        "cursorPosition" : "576,24",
+        "scrollLine" : "568"
     },
     "read_only" : false,
     "read_only_alternatives" : [

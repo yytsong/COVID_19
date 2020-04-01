@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "297216410",
+    "hash" : "4153084692",
     "id" : "97D55B5C",
-    "lastKnownWriteTime" : 1585141804,
-    "last_content_update" : 1585141804,
+    "lastKnownWriteTime" : 1585203914,
+    "last_content_update" : 1585203914,
     "path" : "~/Dropbox/COVID_19/R/0. load_data_jhu.R",
     "project_path" : "R/0. load_data_jhu.R",
     "properties" : {
-        "cursorPosition" : "84,32",
-        "scrollLine" : "76"
+        "cursorPosition" : "8,2",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [

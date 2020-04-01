@@ -2,7 +2,7 @@
     "path" : "~/Dropbox/COVID_19/R",
     "sortOrder" : [
         {
-            "ascending" : true,
+            "ascending" : false,
             "columnIndex" : 2
         }
     ]
