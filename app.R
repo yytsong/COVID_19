@@ -55,14 +55,17 @@ ui <- navbarPage("COVID-19 Application",
                 # fluid = FALSE,
                 
             #    tabsetPanel(
-                ####### this is a start of a page ----------------
+      ####### this is a start of a page "About" ----------------
                 tabPanel("About",
-                         br(), 
-                         strong ("THERE IS CURRENTLY AN ISSUE WITH THE SOURCE DATA AND THIS MAY HAVE AN IMPACT ON OUR PLOTS ESPECIALLY RECOVERED CASES MEASURES."),br(),
-                         strong ("We are keeping fixing the issue in the next few hours."),
-                         br(), br(),br(),
+                         # br(), 
+                         # tags$strong(style="color: red", str_c("THERE IS CURRENTLY AN ISSUE WITH THE SOURCE DATA AS THE LASTEST UPDATES OF CONFIRMED AND DEATH CASES IS ON ", latest_date, " BUT FOR RECOVERED CASES IS ON ", recovery_latest_day, ".")),br(),
+                         # tags$strong(style="color: red", str_c("WE ARE ALSO EXPERIENCING A HIGH VOLUME OF SESSIONS ON OUR DASHBOARD. IF YOU RECEIVE A SERVER DISCONNECTION MESSAGE, WE ARE VERY SORRY FOR THAT. WE DID NOT EXPECT THIS LEVEL OF INTEREST AND WE ARE TRYING TO FIX THIS ISSUE ASAP.")),br(),
+                         # tags$strong(style="color: red", "We have updated all the figure titles to reflect the latest day. We will monitor the situation and update accordingly."),br(),
+                         # 
+                         # 
+                         # br(), 
                          strong("How to Use this APP"), br(),
-                         "We have developed this app to provide live data on the trends of COVID-19 coronavirus. The app provides you with a range of analysis and visualisations that enable you to track the spread of virus around the world and helps you get a sense of patterns across different countries and regions",
+                         "We have developed this app to provide live data on the trends of COVID-19 coronavirus. The app provides you with a range of analysis and visualisations that enable you to track the spread of virus around the world and helps you get a sense of the patterns across different countries and regions",
                          br(), br(),
                          
                          fluidRow(
@@ -78,7 +81,7 @@ ui <- navbarPage("COVID-19 Application",
                          
                          
                          "You have a few options in the top menu:", br(), br(),
-                         strong ("World Explorer:"),"This page allows you to visualise different indicators such as number of cases, deaths, or recoveries, both cumulative and new, in actual or per capita terms.",br(),br(),
+                         strong ("World - Explorer:"),"This page allows you to visualise different indicators such as the number of cases, deaths, or recoveries, both cumulative and new, in actual or per capita terms.",br(),br(),
                          #shiny::img(src="image1.png", align = "centre"), 
                          # fluidRow(
                          #   column(3),
@@ -86,26 +89,33 @@ ui <- navbarPage("COVID-19 Application",
                          #          plotOutput("plt_italy_china", height = "600px")),
                          #   column(3)),
                        #  br(), br(),
-                         strong ("World Day Zero:"),"This page presents the number of cases (reported, deaths, recoveries) in actual and per capita terms. You can add or remove countries and compare them. The x-axis is number of days since the first case was reported which provides you with an opportunity to understand how long it has taken a country to reach a specific number of cases",br(),br(),
-                         strong ("World Growth:"),"This page attempts to present a basic model to predict the number of new cases every day compared to the total number of cases the day before. The graphs can be used to compare the growth rate of reported, death or recovery cases across countries. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns.",br(),br(),
-                         strong ("World Ratio:"),"This page helps you to follow the death and recovery ratios across countries and over time. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns",br(),br(),
+                         strong ("World - Day Zero:"),"This page presents the number of cases (reported, deaths, recoveries) in actual and per capita terms. You can add or remove countries and compare them. The x-axis is number of days since the first case was reported which provides you with an opportunity to understand how long it has taken a country to reach a specific number of cases. You can change this number to be a higher value, for example, days since the 100th case was reported.",br(),br(),
+                         strong ("World - Growth:"),"This page attempts to present a basic model to predict the number of new cases every day compared to the total number of cases the day before. The graphs can be used to compare the growth rate of reported, death or recovery cases across countries. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns.",br(),br(),
+                         strong ("World - Ratio:"),"This page helps you to follow the death and recovery ratios across countries and over time. Please notice that the recovry data has some issues which seem to be due to different reporting practices.",br(),br(),
+                         strong ("World - Healthcare"),"We aim to provide a range of data, mainly sourced from World Bank data, to help provide a better understanding of the capacity of healthcare systems to cope with the outbreak.",br(),br(),
+                       
                          strong ("AUS-US-CHN Day Zero"),"These graphs are very similar to World Day Zero, however, since the sub-region (province/state) data is available for some counntries we have provided the graph at the next level.",br(),br(),
-                         
+                       
                          
                          br(), 
                                 strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-                                "The data is sourced from the code written by ",
-                                a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
-                                a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                "The data is sourced from ",
+                                a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank")," and ",
+                               # a(href="https://github.com/nytimes/covid-19-data","New York Times", target = "_blank")," (US State), and ", 
+                                a(href="https://data.worldbank.org","World Bank", target = "_blank"), ".",br(),
                                 
                                 strong("Feedback"),
                                 "Please contact us on ",
                                 a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
-                                a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),"."
+                                a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".", br(),
+                       
+                       strong("Project"),
+                       "This project is avaliable at",
+                       a(href="https://rstudio.cloud/project/1029711","RStudio Cloud Project.", target = "_blank"), 
                          
                          ),
                 
-            ####### this is a start of a page ----------------
+      ####### this is a start of a page  "Explorer"----------------
             
                 tabPanel("World - Explorer",
                          
@@ -113,18 +123,17 @@ ui <- navbarPage("COVID-19 Application",
                            
                            column(6,
                            strong("Description"),
-        "On this page, you can plot a range of different indicators against each other. For example, if you want to generate a graph that shows number of deaths against the number of reported cases across countries, you can select for the x-axis, Confirmed Cases from X-measure, then choose Cumulative Cases, and then Actual, and for the y-axis select Death Cases, Cumulative and then Actual. This would then show you Death against Cases and so you can get a sense of changes in death rate across countries.
-        You can change the list of countries included, this is an example for three countries."),
+        "On this page, you can plot a range of different indicators against each other. For example, if you want to generate a graph that shows the number of deaths against the number of reported cases across countries, you can select for the x-axis, Confirmed Cases from X-measure, then choose Cumulative Cases, and then Actual, and for the y-axis select Death Cases, Cumulative and then Actual. This would then show you Death against Cases and so you can get a sense of changes in death rate across countries.
+        You can change the list of countries included"),
       column(6,
-       strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-       "The data is sourced from the code written by ",
-       a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
-       a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
-       
-       strong("Feedback"),
-       "Please contact us on ",
-       a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
-       a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+             strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+             "The data is sourced from ",
+             a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
+             
+             strong("Feedback"),
+             "Please contact us on ",
+             a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+             a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
 
 
                          ), br(),
@@ -137,7 +146,7 @@ ui <- navbarPage("COVID-19 Application",
                                   pickerInput(inputId = "region0", 
                                                  label = "Region",
                                                  choices = region_country_list$Continent %>% unique(),
-                                                 selected = c("Asia", "Europe"),
+                                                 selected = region_country_list$Continent %>% unique(),
                                               options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                              liveSearchStyle = 'contains'),
                                                  multiple = TRUE)
@@ -223,7 +232,7 @@ ui <- navbarPage("COVID-19 Application",
                 ),
                 
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Day Zero" ----------------
       
                  tabPanel("World - Day Zero",
                   
@@ -231,12 +240,11 @@ ui <- navbarPage("COVID-19 Application",
                             
                             column(6,
                                    strong("Description"),
-                                   "On this page, you can look at the trend for the number of new and total cases, both actual (left) and per capita (right, per 10 M of population). On the x-axis we the plot counts the number of days since the first case was reported in each country. Please notice that the y-axis is logged."),
+                                   "On this page, you can look at the trend for the number of new and total cases, both actual (left) and per capita (right, per 10 M of population). On the x-axis we the plot the number of days since the Nth case was reported in each country, you can change this number. Please notice that the y-axis is logged."),
                             column(6,
                                    strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-                                   "The data is sourced from the code written by ",
-                                   a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
-                                   a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                   "The data is sourced from ",
+                                   a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
                                    
                                    strong("Feedback"),
                                    "Please contact us on ",
@@ -255,7 +263,7 @@ ui <- navbarPage("COVID-19 Application",
                           pickerInput(inputId = "region", 
                                          label = "Region",
                                          choices = region_country_list$Continent %>% unique(),
-                                         selected = c("Asia", "Europe"),
+                                         selected = region_country_list$Continent %>% unique(),
                                          options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                         liveSearchStyle = 'contains'),
                                          multiple = TRUE)),
@@ -297,7 +305,7 @@ ui <- navbarPage("COVID-19 Application",
 
                  ),
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Growth"----------------
       
                 tabPanel("World - Growth",
                          
@@ -306,12 +314,11 @@ ui <- navbarPage("COVID-19 Application",
                            
                            column(6,
                                   strong("Description"),
-                                  "This page attempts to present a basic model to predict the number of new cases every day compared to the total number of cases the day before. The graphs can be used to compare the growth rate of reported, death or recovery cases across countries. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns."),
+                                  "This page attempts to present a basic model to predict the number of new cases every day compared to the total number of cases the day before. The graphs can be used to compare the growth rate of reported, death, or recovery cases across countries. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns."),
                            column(6,
                                   strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-                                  "The data is sourced from the code written by ",
-                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
-                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  "The data is sourced from ",
+                                  a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
                                   
                                   strong("Feedback"),
                                   "Please contact us on ",
@@ -327,7 +334,7 @@ ui <- navbarPage("COVID-19 Application",
                                   pickerInput(inputId = "region2", 
                                                  label = "Region",
                                                  choices = region_country_list$Continent %>% unique(),
-                                                 selected = c("Asia", "Europe"),
+                                                 selected = region_country_list$Continent %>% unique(),
                                                  options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                                 liveSearchStyle = 'contains'),
                                                  multiple = TRUE)
@@ -364,7 +371,7 @@ ui <- navbarPage("COVID-19 Application",
                            )
                 ),
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Ratio"----------------
       
                 tabPanel("World - Ratio",
                          
@@ -372,12 +379,11 @@ ui <- navbarPage("COVID-19 Application",
                            
                            column(6,
                                   strong("Description"),
-                                  "This page helps you to follow the death and recovery ratios across countries and over time. The plot on the left shows the death and the plot on the right provides the recovery ratio."),
+                                  "This page helps you to follow the death and recovery ratios across countries and over time. The plot on the right shows the death and the plot on the left provides the recovery ratio. Please notice that on early days the values can be volatile due to small number of cases."),
                            column(6,
                                   strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-                                  "The data is sourced from the code written by ",
-                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
-                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  "The data is sourced from ",
+                                  a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
                                   
                                   strong("Feedback"),
                                   "Please contact us on ",
@@ -392,7 +398,7 @@ ui <- navbarPage("COVID-19 Application",
                                   pickerInput(inputId = "region3", 
                                                  label = "Region",
                                                  choices = region_country_list$Continent %>% unique(),
-                                                 selected = c("Asia", "Europe"),
+                                                 selected = region_country_list$Continent %>% unique(),
                                                  options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                                 liveSearchStyle = 'contains'),
                                                  multiple = TRUE)
@@ -419,8 +425,59 @@ ui <- navbarPage("COVID-19 Application",
                            column(6,
                                   plotOutput("plt_perc_death", height = "600px")))
                 ),
+      
+      
+      ####### this is a start of a page "Heathcare System" ----------------
+      
+      tabPanel("World - Healthcare System",
+
+               fluidRow(
+
+                 column(6,
+                        strong("Description"),
+                        "This page consolidates world bank data with COVID-19 cases, we mainly focus on indicators that would help us better understand the capacity of the healthcare system and how much it is stressed.", br(), 
+                        strong("Formula"), "Active Cases = Confirmed Cases - (Death Cases + Recovered Cases)"),
+                 column(6,
+                        strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                        "The data is sourced from ",
+                        a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
+                        
+                        strong("Feedback"),
+                        "Please contact us on ",
+                        a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                        a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+
+
+               ), br(),
+
+               fluidRow(
+                 
+                 column(2,
+                        pickerInput(inputId = "region7", 
+                                    label = "Region",
+                                    choices = wb_dt$Continent %>% unique(),
+                                    selected = wb_dt$Continent %>% unique(),
+                                    options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                   liveSearchStyle = 'contains'),
+                                    multiple = TRUE)),
+                 
+                 column(2, uiOutput("country7"))
+
+               ),br(),
+
+
+               fluidRow(
+                 column(4,plotOutput("plt_hospital_bed", height = "300px")),
+                 column(4,plotOutput("plt_physicians", height = "300px")),
+                 column(4,plotOutput("plt_specialists", height = "300px"))), br(),br(),
+               fluidRow(
+                 column(4,plotOutput("plt_nurse", height = "300px")),
+                 column(4, plotOutput("plt_daily_death", height = "300px")),
+                 column(4, plotOutput("plt_annual_death", height = "300px")))
+      ),
+      
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "State/Province"----------------
       
                 tabPanel("State/Province - Day Zero",
                          
@@ -428,12 +485,11 @@ ui <- navbarPage("COVID-19 Application",
                            
                            column(6,
                                   strong("Description"),
-                                  "On this page, you can look at the trend for the number of new and total cases, both actual (left) and per capita (right, per 10 M of population). On the x-axis we the plot counts the number of days since the first case was reported in each country. Please notice that the y-axis is logged."),
+                                  "On this page, you can look at the trends for the number of new and total cases, both actual (left) and per capita (right, per 10 M of population). On the x-axis we the plot counts the number of days since the first case was reported in each country. Please notice that the y-axis is logged."),
                            column(6,
                                   strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-                                  "The data is sourced from the code written by ",
-                                  a(href="https://rviews.rstudio.com/2020/03/05/covid-19-epidemiology-with-r/","Tim Churches (UNSW)", target = "_blank"), " which extracts data from ",
-                                  a(href="https://systems.jhu.edu/research/public-health/ncov/","Johns Hopkins University", target = "_blank"),".", br(),
+                                  "The data is sourced from ",
+                                  a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
                                   
                                   strong("Feedback"),
                                   "Please contact us on ",
@@ -450,7 +506,8 @@ ui <- navbarPage("COVID-19 Application",
                                   
                                   pickerInput(inputId = "detail_country",
                                               label = "Country",
-                                              choices = unique(country_state_list$country_region),
+                                              choices = #c("Australia", "China"),
+                                                unique(country_state_list$country_region),
                                               selected = "Australia",
                                               options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                              liveSearchStyle = 'contains'),
@@ -548,7 +605,7 @@ server <- function(input, output, session) {
     pickerInput(inputId = "country0",
                 label = "Country",
                 choices = country,
-                selected = c("China", "Italy"),
+                selected = c("US", "Italy"),
                 options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                liveSearchStyle = 'contains'),
                 multiple= TRUE)
@@ -558,10 +615,12 @@ server <- function(input, output, session) {
       
       if(length(input$region0) == 0){
       
+        country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country0",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country0,
+                          selected = c("US", "Italy"))  
         
           
       }else if(input$region0 > 0){
@@ -571,7 +630,7 @@ server <- function(input, output, session) {
       updatePickerInput(session = session,
                         inputId = "country0",
                         choices = country0,
-                        selected = country0)
+                        selected = NULL)
                        
       }
     
@@ -594,6 +653,34 @@ server <- function(input, output, session) {
   })
   
   
+  ##### find state analysis from here ---------------
+  
+  output$detail_state <- renderUI({
+    req(input$detail_country)
+    
+    sp <-  country_state_list %>% filter(country_region %in% input$detail_country) %>% pull(state)
+    
+    pickerInput(inputId = "detail_state",
+                label = "State/Province",
+                choices = sp,
+                selected = sp,
+                options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                               liveSearchStyle = 'contains'),
+                multiple= TRUE)
+    
+  })
+  
+  tabinfo <- reactive({
+    req(input$tab)
+    if (input$tab == "World - Day Zero"){
+      t <- "world"}else if(input$tab == "State/Province - Day Zero"){
+        t <- "other"}
+    t
+    
+  })
+  
+  
+  
     ##### world day zero ------
 
   output$country <- renderUI({
@@ -604,7 +691,7 @@ server <- function(input, output, session) {
     pickerInput(inputId = "country",
                 label = "Country",
                 choices = country,
-                selected = c("China", "Italy"),
+                selected = c("US", "Italy"),
                 options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                liveSearchStyle = 'contains'),
                 multiple= TRUE)
@@ -615,10 +702,12 @@ server <- function(input, output, session) {
     
     if(length(input$region) == 0){
       
+      country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
+      
       updatePickerInput(session = session,
                         inputId = "country",
-                        choices = NULL,
-                        selected = NULL)  
+                        choices = country,
+                        selected = c("US", "Italy"))  
       
       
     }else if(input$region > 0){
@@ -628,7 +717,7 @@ server <- function(input, output, session) {
       updatePickerInput(session = session,
                         inputId = "country",
                         choices = country,
-                        selected = country)
+                        selected = NULL)
       
     }
     
@@ -642,7 +731,7 @@ server <- function(input, output, session) {
     })
     
     output$plt_pass_day <- renderPlot({
-        req(input$region, input$country, input$measure, input$country,pass_day_dt(), input$aspect, tabinfo(), input$min_case)
+        req(tabinfo(),  pass_day_dt(), input$region, input$country, input$measure, input$aspect, input$min_case)
            # ggplotly(
       plot_day_passed_day(df = pass_day_dt(), m = input$measure, a = input$aspect, g = tabinfo(), min_case = input$min_case
                                     )#, tooltip = "text") %>%
@@ -650,7 +739,7 @@ server <- function(input, output, session) {
     })
     
     output$plt_per_capita <- renderPlot({
-        req(input$region, input$country, input$measure, input$country, pass_day_dt(), input$aspect, tabinfo(), input$min_case)
+        req( tabinfo(),pass_day_dt(), input$region, input$country, input$measure,  input$aspect, input$min_case)
         # ggplotly(
       plot_per_capita(df = pass_day_dt(), m = input$measure, a = input$aspect, g = tabinfo(), min_case = input$min_case
         )#, tooltip = "text") %>%
@@ -666,7 +755,7 @@ server <- function(input, output, session) {
       pickerInput(inputId = "country2",
                   label = "Country",
                   choices = country,
-                  selected = c("China", "Italy"),
+                  selected = c("US", "Italy"),
                   options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                  liveSearchStyle = 'contains'),
                   multiple= TRUE)
@@ -677,10 +766,12 @@ server <- function(input, output, session) {
       
       if(length(input$region2) == 0){
         
+        country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country2",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country2,
+                          selected = c("US", "Italy"))  
         
         
       }else if(input$region2 > 0){
@@ -690,7 +781,7 @@ server <- function(input, output, session) {
         updatePickerInput(session = session,
                           inputId = "country2",
                           choices = country2,
-                          selected = country2)
+                          selected = NULL)
         
       }
       
@@ -730,22 +821,23 @@ server <- function(input, output, session) {
              pickerInput(inputId = "country3",
                          label = "Country",
                          choices = country,
-                         selected = c("China","Italy"),
+                         selected = c("US","Italy"),
                          options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                         liveSearchStyle = 'contains'),
                          multiple= TRUE)
       
     })
     
-    
     observe({
       
       if(length(input$region3) == 0){
         
+        country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country3",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country3,
+                          selected = c("US","Italy"))  
         
         
       }else if(input$region3 > 0){
@@ -755,7 +847,7 @@ server <- function(input, output, session) {
         updatePickerInput(session = session,
                           inputId = "country3",
                           choices = country3,
-                          selected = country3)
+                          selected = NULL)
         
       }
       
@@ -775,28 +867,86 @@ server <- function(input, output, session) {
     
     
     
-    ##### find state analysis from here ---------------
     
-    output$detail_state <- renderUI({
-      req(input$detail_country)
+    #### world bank page -----------
+    
+    
+    output$country7 <- renderUI({
+      req(input$region7)
+      country <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
       
-     sp <-  country_state_list %>% filter(country_region %in% input$detail_country) %>% pull(state)
+             pickerInput(inputId = "country7",
+                         label = "Country",
+                         choices = country,
+                         selected = c("Italy", "US"),
+                         options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                        liveSearchStyle = 'contains'),
+                         multiple = TRUE)
+    })
+    
+    observe({
       
-      pickerInput(inputId = "detail_state",
-                  label = "State/Province",
-                  choices = sp,
-                  selected = sp,
-                  options = list(`actions-box` = TRUE, `live-search` = TRUE,
-                                 liveSearchStyle = 'contains'),
-                  multiple= TRUE)
+      if(length(input$region7) == 0){
+        
+        country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
+        
+        updatePickerInput(session = session,
+                          inputId = "country7",
+                          choices = country7,
+                          selected = c("Italy", "US"))  
+        
+        
+      }else if(input$region7 > 0){
+        
+        country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
+        
+        updatePickerInput(session = session,
+                          inputId = "country7",
+                          choices = country7,
+                          selected = NULL)
+        
+      }
       
     })
     
-    tabinfo <- reactive({
-      req(input$tab)
-      if (input$tab == "World - Day Zero"){return("world")}else{return("state")}
+    output$plt_hospital_bed <- renderPlot({
+      req(input$country7, input$region7)
       
+      plot_health_measure(c = input$country7, m ="hospital_bed")
     })
+    
+    output$plt_physicians <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_health_measure(c = input$country7, m ="physicians")
+    })
+    
+    output$plt_specialists <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_health_measure(c = input$country7, m ="specialists")
+    })
+    
+    output$plt_nurse <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_health_measure(c = input$country7, m ="nurse")
+    })
+    
+    output$plt_daily_death <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_death_crude(c = input$country7, m ="new")
+    })
+
+    output$plt_annual_death <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_death_crude(c = input$country7, m ="cumulative")
+    })
+    
+    
+
     
 
     ########## State HERE -------------
@@ -810,7 +960,8 @@ server <- function(input, output, session) {
     
     output$plt_pass_day_sp <- renderPlot({
       req(#input$level, 
-        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4)
+        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4, 
+        input$detail_country,input$detail_state)
       # ggplotly(
       plot_day_passed_day(df = pass_day_dt_sp(), m = input$measure4, a = input$aspect4, g = tabinfo(), min_case = input$min_case4
       )#, tooltip = "text") %>%
@@ -819,7 +970,8 @@ server <- function(input, output, session) {
     
     output$plt_per_capita_sp <- renderPlot({
       req(#input$level, 
-        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4)
+        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4, 
+        input$detail_country,input$detail_state)
       # ggplotly(
       plot_per_capita(df = pass_day_dt_sp(), m = input$measure4,  a = input$aspect4, g = tabinfo(), min_case = input$min_case4
       )#, tooltip = "text") %>%

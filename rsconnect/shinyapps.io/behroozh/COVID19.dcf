@@ -5,9 +5,9 @@ account: behroozh
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1933279
-bundleId: 2924493
+bundleId: 2946599
 url: https://behroozh.shinyapps.io/COVID19/
-when: 1585169381.00402
+when: 1585613473.86999
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: Icon|www/image1.png|www/image2.png|Other
+ignoredFiles: Icon|www/image1.png|www/image2.png|daily data|Other

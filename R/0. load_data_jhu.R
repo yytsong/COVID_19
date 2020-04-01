@@ -16,6 +16,9 @@
 # wp_region <- fread("data/reg_country.csv") %>% 
 #   rename("Global" = "Global South")
 
+
+#### region <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv")
+
 wp_region <- read_excel("data/reg_country_wiki.xlsx")
 
 pop <- fread("data/world_pop.csv") %>% 
@@ -36,24 +39,12 @@ pop <- fread("data/world_pop.csv") %>%
 # setdiff(unique(pop$Country), unique(wp_region$Country))
 
 
-# # data collected by John Hopkins University
-# jhu_url_confirmed <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
-#                  "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-#                  "time_series_covid19_confirmed_global.csv", sep = "")
-# #time_series_covid19_confirmed_global
-# 
-# jhu_url_deaths <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
-#                  "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-#                  "time_series_covid19_deaths_global.csv", sep = "")
-# 
-# jhu_url_recovered <- paste("https://raw.githubusercontent.com/CSSEGISandData/", 
-#                         "COVID-19/master/csse_covid_19_data/", "csse_covid_19_time_series/", 
-#                         "time_series_19-covid-Recovered.csv", sep = "")
+# # # data collected by John Hopkins University
 
 ### github projec from JHU https://github.com/CSSEGISandData/COVID-19
-jhu_url_confirmed <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"
-jhu_url_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"
-jhu_url_recovered <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"
+jhu_url_confirmed <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+jhu_url_deaths <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+jhu_url_recovered <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 
 
 # jhu_url_recovered <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"
@@ -105,6 +96,9 @@ dt_recovered <- read_csv(jhu_url_recovered) %>%
          )) %>% 
   arrange(country_region, province_state, as.character(Date)) %>% 
   as.data.table()
+
+
+recovery_latest_day <- dt_recovered$Date %>% max()
 
 # dt_recovered <- read.csv(jhu_url_recovered, header = TRUE) %>% 
 #   mutate(recovered_cases =as.double(recovered_cases)) %>% 
@@ -169,7 +163,7 @@ dt <- read_csv(jhu_url_confirmed) %>%
 
 
 
-
+latest_date <- max(dt$Date)
 
 
 
@@ -184,17 +178,53 @@ dt <- read_csv(jhu_url_confirmed) %>%
 #   ungroup()
 
 
+### this is original us_dt from JHU
+us_pop <- fread("data/us_pop.csv") %>% select(state, population)
+# 
+# us_dt <- 
+#   dt%>% 
+#   filter(country_region == "US") %>% 
+#   separate(province_state, c("province", "state_ini"), ", ") %>% 
+#   left_join(us_pop[,c("state_ini","state")], by = c("state_ini" = "state_ini")) %>% 
+#   mutate(state= ifelse(is.na(state), province, state)) %>% 
+#   left_join(us_pop[,c("state", "population")], by = "state") %>% 
+#   select(country_region, state, population, Date, confirmed_cases,  death_cases, recovered_cases) 
 
-us_pop <- fread("data/us_pop.csv")
 
-us_dt <- 
-  dt%>% 
-  filter(country_region == "US") %>% 
-  separate(province_state, c("province", "state_ini"), ", ") %>% 
-  left_join(us_pop[,c("state_ini","state")], by = c("state_ini" = "state_ini")) %>% 
-  mutate(state= ifelse(is.na(state), province, state)) %>% 
-  left_join(us_pop[,c("state", "population")], by = "state") %>% 
-  select(country_region, state, population, Date, confirmed_cases,  death_cases, recovered_cases) 
+# ### this is from NYtimes
+# 
+# us_dt <- read_csv("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv")%>%
+#   rename("confirmed_cases" = "cases", "death_cases" = "deaths", "Date" = "date") %>%
+#   left_join(us_pop, by = "state") %>%
+#   mutate(country_region = "US", recovered_cases = NA) %>%
+#   select(country_region, state, population, Date, confirmed_cases, death_cases, recovered_cases) %>%
+#   arrange(state, Date)
+
+#### this is from JHU updated us county 
+us_county_confirmed <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv") %>% 
+  group_by(Province_State) %>% 
+  summarise_at(vars(ends_with("/2020")), funs(sum)) %>% 
+  pivot_longer(cols = ends_with("/2020"), names_to = "Date", values_to = "confirmed_cases") %>% 
+  select(Province_State,Date, confirmed_cases)%>% 
+  filter(Province_State != "Recovered") %>% 
+  mutate(Date = mdy(Date)) 
+
+us_county_death <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv") %>% 
+  group_by(Province_State) %>% 
+  summarise_at(vars(ends_with("/2020")), funs(sum)) %>% 
+  pivot_longer(cols = ends_with("/2020"), names_to = "Date", values_to = "death_cases") %>% 
+  select(Province_State,Date, death_cases)%>% 
+  filter(Province_State != "Recovered") %>% 
+  mutate(Date = mdy(Date)) 
+
+us_dt <- us_county_confirmed %>% 
+  left_join(us_county_death, by = c("Province_State", "Date")) %>% 
+  rename("state"="Province_State") %>% 
+  left_join(us_pop, by = "state") %>% 
+  mutate(recovered_cases = NA, country_region = "US")%>% 
+  select(country_region, state, population, Date, confirmed_cases, death_cases, recovered_cases) %>% 
+  arrange(state, Date)
+
 
 au_pop <- fread("data/aus_pop.csv") 
 
@@ -203,7 +233,8 @@ au_dt <-
   filter(country_region == "Australia") %>% 
   left_join(au_pop, by = c("province_state" = "state")) %>%
   rename("state" = "province_state") %>% 
-  select(country_region, state, population, Date, confirmed_cases,  death_cases, recovered_cases) 
+  select(country_region, state, population, Date, confirmed_cases,  death_cases, recovered_cases) %>% 
+  arrange(state, Date)
 
 
 
@@ -220,7 +251,7 @@ ch_pop <- fread("data/chn_pop.csv") %>%
            ),
          Population = as.integer(Population),
          Density = as.numeric(Density)) %>% 
-  rename("population" = "Population")
+  rename("population" = "Population") 
 
 ch_dt <- 
   dt %>% 
@@ -228,7 +259,9 @@ ch_dt <-
   select(-Population) %>% 
   left_join(ch_pop, by = c("province_state" = "Province")) %>% 
   rename("state" = "province_state")  %>% 
-  select(country_region, state, population, Date, confirmed_cases,  death_cases, recovered_cases) 
+  select(country_region, state, population, Date, confirmed_cases,  death_cases, recovered_cases) %>% 
+  arrange(state, Date)
+
 
 
 detailed_country_dt <- rbind(au_dt, ch_dt, us_dt)
@@ -274,7 +307,19 @@ rc_dictionary <- setNames(rc_list$Region, rc_list$Continent)
 # setdiff(dt$country_region,wb_dt$Country )
 #  setdiff(wb_dt$Country,dt$country_region )
 
-wb_dt <- fread("data/wb_data.csv")
+dt_country <- dt %>% 
+  group_by(Continent, country_region, Date) %>% 
+  summarise_at(vars(confirmed_cases, death_cases, recovered_cases), ~ sum(., na.rm = TRUE))
+
+wb_dt <- fread("data/wb_data_2020-03-31.csv") %>% 
+  right_join(dt_country, by = c("Country" = "country_region"))  %>% 
+  filter(confirmed_cases > 0) %>% 
+  group_by(Country) %>% 
+  mutate(first_day = min(Date), days = Date - first_day + 1) %>% 
+  ungroup() %>% 
+  mutate(active_cases = confirmed_cases - death_cases - recovered_cases)
+
+# wb_dt %>% write_csv(str_c("other/behrooz_wb_dt_", Sys.Date(),".csv"))  
 
 
 

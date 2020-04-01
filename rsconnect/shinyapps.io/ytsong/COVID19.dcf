@@ -10,3 +10,4 @@ url: https://ytsong.shinyapps.io/COVID19/
 when: 1584925178.18359
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles:

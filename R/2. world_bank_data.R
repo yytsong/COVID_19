@@ -1,5 +1,7 @@
 ## test world bank data
-
+## source code https://www.r-bloggers.com/tidying-the-new-johns-hopkins-covid-19-time-series-datasets/
+## package used library(wbstats)
+## this script is only required to run once in a while, and dt will be joint in 0. load_data_jhu.R
 
 pull_worldbank_data <- function(vars) {
   new_cache <- wbcache()
@@ -24,7 +26,7 @@ pull_worldbank_data <- function(vars) {
   wb_data_def<- left_join(data.frame(var_name = names(wb_data),
                                      stringsAsFactors = FALSE),
                           wb_data_def, by = "var_name")
-  wb_data_def$var_def[1:19] <- c(
+  wb_data_def$var_def[1:23] <- c(
     "Three letter ISO country code as used by World Bank",
     "Two letter ISO country code as used by World Bank",
     "Country name as used by World Bank",
@@ -43,7 +45,11 @@ pull_worldbank_data <- function(vars) {
     "Personal remittances, received (current US$)",
     "Specialist surgical workforce (per 100,000 population)",
     "Nurses and midwives (per 1,000 people)",
-    "Physicians (per 1,000 people)")
+    "Physicians (per 1,000 people)",
+    "Vulnerable employment, male (% of male employment) (modeled ILO estimate)",
+    "Vulnerable employment, female (% of female employment) (modeled ILO estimate)",
+    "International tourism, number of arrivals",
+    "International tourism, number of departures")
   wb_data_def$type = c("cs_id", rep("factor",  4), "ts_id",
                        rep("numeric", ncol(wb_data) - 6))
   return(list(wb_data, wb_data_def))
@@ -52,12 +58,11 @@ pull_worldbank_data <- function(vars) {
 vars <- c("SP.POP.TOTL", "AG.LND.TOTL.K2", "EN.POP.DNST", 
           "EN.URB.LCTY", "SP.DYN.LE00.IN", "NY.GDP.PCAP.KD",
           "SH.MED.BEDS.ZS", "SP.URB.TOTL.IN.ZS","SP.POP.65UP.TO.ZS",
-          "SP.DYN.CDRT.IN", 
-          "SL.UEM.TOTL.ZS", "SH.TBS.INCD",
-          "NY.GDP.PCAP.KD.ZG", "NE.IMP.GNFS.ZS",
-          "EN.POP.SLUM.UR.ZS","BX.TRF.PWKR.CD.DT",
-          "SH.MED.SAOP.P5","SH.MED.NUMW.P3",
-          "SH.MED.PHYS.ZS")
+          "SP.DYN.CDRT.IN", "SL.UEM.TOTL.ZS", "SH.TBS.INCD",
+          "NY.GDP.PCAP.KD.ZG", "NE.IMP.GNFS.ZS","EN.POP.SLUM.UR.ZS",
+          "BX.TRF.PWKR.CD.DT", "SH.MED.SAOP.P5","SH.MED.NUMW.P3",
+          "SH.MED.PHYS.ZS", "SL.EMP.VULN.MA.ZS","SL.EMP.VULN.FE.ZS",
+          "ST.INT.ARVL", "ST.INT.DPRT")
 wb_list <- pull_worldbank_data(vars)
 wb_data <- wb_list[[1]]
 wb_data_def <- wb_list[[2]]
@@ -71,12 +76,12 @@ wb_data %>%
     land_area_skm = ifelse(identical(na.omit(AG.LND.TOTL.K2), logical(0)), NA, last(na.omit(AG.LND.TOTL.K2))),
     pop_density = ifelse(identical(na.omit(EN.POP.DNST), logical(0)), NA, last(na.omit(EN.POP.DNST))),
     pop_largest_city = ifelse(identical(na.omit(EN.URB.LCTY), logical(0)), NA, last(na.omit(EN.URB.LCTY))), 
-    gdp_capita = ifelse(identical(na.omit(SP.DYN.LE00.IN), logical(0)), NA, last(na.omit(SP.DYN.LE00.IN))),
-    life_expectancy = ifelse(identical(na.omit(NY.GDP.PCAP.KD), logical(0)), NA, last(na.omit(NY.GDP.PCAP.KD))),
+    gdp_capita = ifelse(identical(na.omit(NY.GDP.PCAP.KD), logical(0)), NA, last(na.omit(NY.GDP.PCAP.KD))),
+    life_expectancy = ifelse(identical(na.omit(SP.DYN.LE00.IN), logical(0)), NA, last(na.omit(SP.DYN.LE00.IN))),
     hospital_bed = ifelse(identical(na.omit(SH.MED.BEDS.ZS), logical(0)), NA, last(na.omit(SH.MED.BEDS.ZS))),
     urban_pop = ifelse(identical(na.omit(SP.URB.TOTL.IN.ZS), logical(0)), NA, last(na.omit(SP.URB.TOTL.IN.ZS))),
     pop_age_65 = ifelse(identical(na.omit(SP.POP.65UP.TO.ZS), logical(0)), NA, last(na.omit(SP.POP.65UP.TO.ZS))),
-  #  death_crude = ifelse(identical(na.omit(SP.DYN.CDRT.IN), logical(0)), NA, last(na.omit(SP.DYN.CDRT.IN))),
+   death_crude = ifelse(identical(na.omit(SP.DYN.CDRT.IN), logical(0)), NA, last(na.omit(SP.DYN.CDRT.IN))),
     unemployment = ifelse(identical(na.omit(SL.UEM.TOTL.ZS), logical(0)), NA, last(na.omit(SL.UEM.TOTL.ZS))),
     tuberculosis = ifelse(identical(na.omit(SH.TBS.INCD), logical(0)), NA, last(na.omit(SH.TBS.INCD))),
     gdp_per_capita_growth = ifelse(identical(na.omit(NY.GDP.PCAP.KD.ZG), logical(0)), NA, last(na.omit(NY.GDP.PCAP.KD.ZG))),
@@ -84,24 +89,34 @@ wb_data %>%
     pop_slum = ifelse(identical(na.omit(EN.POP.SLUM.UR.ZS), logical(0)), NA, last(na.omit(EN.POP.SLUM.UR.ZS))),
     remittances = ifelse(identical(na.omit(BX.TRF.PWKR.CD.DT), logical(0)), NA, last(na.omit(BX.TRF.PWKR.CD.DT))),
     specialists = ifelse(identical(na.omit(SH.MED.SAOP.P5), logical(0)), NA, last(na.omit(SH.MED.SAOP.P5))),
-  #  nurse = ifelse(identical(na.omit(SH.MED.NUMW.P3), logical(0)), NA, last(na.omit(SH.MED.NUMW.P3))),
-    physicians = ifelse(identical(na.omit(SH.MED.PHYS.ZS), logical(0)), NA, last(na.omit(SH.MED.PHYS.ZS)))
+   nurse = ifelse(identical(na.omit(SH.MED.NUMW.P3), logical(0)), NA, last(na.omit(SH.MED.NUMW.P3))),
+    physicians = ifelse(identical(na.omit(SH.MED.PHYS.ZS), logical(0)), NA, last(na.omit(SH.MED.PHYS.ZS))),
+   v_employment_male = ifelse(identical(na.omit(SL.EMP.VULN.MA.ZS), logical(0)), NA, last(na.omit(SL.EMP.VULN.MA.ZS))),
+   v_employment_female = ifelse(identical(na.omit(SL.EMP.VULN.FE.ZS), logical(0)), NA, last(na.omit(SL.EMP.VULN.FE.ZS))),
+   int_arrival = ifelse(identical(na.omit(ST.INT.ARVL), logical(0)), NA, last(na.omit(ST.INT.ARVL))),
+   int_departure = ifelse(identical(na.omit(ST.INT.DPRT), logical(0)), NA, last(na.omit(ST.INT.DPRT)))
     ) %>% 
-  ungroup()
+  ungroup() %>% 
+  mutate(hospital_bed = hospital_bed * population/1000,
+         death_crude = death_crude * population/1000,
+         tuberculosis = tuberculosis * population/100000,
+         specialists = specialists * population/100000,
+         nurse = nurse * population/1000,
+         physicians = physicians * population/1000)
 
 
-country_code <- read_excel("data/country_code.xlsx") 
+country_code <- read_excel("data/country_code.xlsx")  %>% 
+  select(Country, `Alpha-2 code`)
 
 # setdiff(region_country_list$country_region,country_code$Country )
 
 wb_dt <- wb_cs %>% 
   right_join(country_code, by = c("iso2c" = "Alpha-2 code")) %>% 
   filter(!is.na(country)) %>% 
-  select(Country, region, income, population:hospital_bed) %>% 
-  right_join(dt %>% filter(province_state == country_region), by = c("Country" = "country_region")) 
+  select(Country, region, income, population:ncol(.)) 
 
 
-write_csv(wb_dt, "data/wb_data.csv")
+write_csv(wb_dt, str_c("data/wb_data_", Sys.Date(), ".csv"))
 
 
 
