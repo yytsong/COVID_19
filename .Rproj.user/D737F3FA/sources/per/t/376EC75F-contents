@@ -18,6 +18,7 @@ library(RCurl)
 library(httr)
 library(readxl)
 library(wbstats)
+library(DT)
 #library(ggalluvial)
 pkgload::load_all(path= "GAlogger/")
 theme_set(theme_minimal())
@@ -55,15 +56,15 @@ ui <- navbarPage("COVID-19 Application",
                 # fluid = FALSE,
                 
             #    tabsetPanel(
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "About" ----------------
                 tabPanel("About",
-                         br(), 
-                         tags$strong(style="color: red", str_c("THERE IS CURRENTLY AN ISSUE WITH THE SOURCE DATA AS THE LASTEST UPDATES OF CONFIRMED AND DEATH CASES IS ON ", latest_date, " BUT FOR RECOVERED CASES IS ON ", recovery_latest_day, ".")),br(),
-                         tags$strong(style="color: red", str_c("WE ARE ALSO EXPERIENCING A HIGH VOLUME OF SESSIONS ON OUR DASHBOARD. IF YOU RECEIVE A SERVER DISCONNECTION MESSAGE, WE ARE VERY SORRY FOR THAT. WE DID NOT EXPECT THIS LEVEL OF INTEREST AND WE ARE TRYING TO FIX THIS ISSUE ASAP.")),br(),
-                         tags$strong(style="color: red", "We have updated all the figure titles to reflect the latest day. We will monitor the situation and update accordingly."),br(),
-                         
-                         
-                         br(), 
+                         # br(), 
+                         # tags$strong(style="color: red", str_c("THERE IS CURRENTLY AN ISSUE WITH THE SOURCE DATA AS THE LASTEST UPDATES OF CONFIRMED AND DEATH CASES IS ON ", latest_date, " BUT FOR RECOVERED CASES IS ON ", recovery_latest_day, ".")),br(),
+                         # tags$strong(style="color: red", str_c("WE ARE ALSO EXPERIENCING A HIGH VOLUME OF SESSIONS ON OUR DASHBOARD. IF YOU RECEIVE A SERVER DISCONNECTION MESSAGE, WE ARE VERY SORRY FOR THAT. WE DID NOT EXPECT THIS LEVEL OF INTEREST AND WE ARE TRYING TO FIX THIS ISSUE ASAP.")),br(),
+                         # tags$strong(style="color: red", "We have updated all the figure titles to reflect the latest day. We will monitor the situation and update accordingly."),br(),
+                         # 
+                         # 
+                         # br(), 
                          strong("How to Use this APP"), br(),
                          "We have developed this app to provide live data on the trends of COVID-19 coronavirus. The app provides you with a range of analysis and visualisations that enable you to track the spread of virus around the world and helps you get a sense of the patterns across different countries and regions",
                          br(), br(),
@@ -100,16 +101,23 @@ ui <- navbarPage("COVID-19 Application",
                          br(), 
                                 strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
                                 "The data is sourced from ",
-                                a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),".", br(),
+                                a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),", ",
+                               # a(href="https://github.com/nytimes/covid-19-data","New York Times", target = "_blank")," (US State), and ", 
+                                a(href="https://data.worldbank.org","World Bank", target = "_blank"), " and ",
+                       a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".",br(),
+                       
                                 
                                 strong("Feedback"),
                                 "Please contact us on ",
                                 a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
-                                a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),"."
+                                a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".", br(),
+                       strong("Project"),
+                       "This project is avaliable at",
+                       a(href="https://rstudio.cloud/project/1029711","RStudio Cloud Project.", target = "_blank"), 
                          
                          ),
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page  "Explorer"----------------
             
                 tabPanel("World - Explorer",
                          
@@ -226,7 +234,7 @@ ui <- navbarPage("COVID-19 Application",
                 ),
                 
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Day Zero" ----------------
       
                  tabPanel("World - Day Zero",
                   
@@ -299,7 +307,7 @@ ui <- navbarPage("COVID-19 Application",
 
                  ),
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Growth"----------------
       
                 tabPanel("World - Growth",
                          
@@ -365,7 +373,7 @@ ui <- navbarPage("COVID-19 Application",
                            )
                 ),
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Ratio"----------------
       
                 tabPanel("World - Ratio",
                          
@@ -421,7 +429,7 @@ ui <- navbarPage("COVID-19 Application",
                 ),
       
       
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "Heathcare System" ----------------
       
       tabPanel("World - Healthcare System",
 
@@ -470,8 +478,63 @@ ui <- navbarPage("COVID-19 Application",
                  column(4, plotOutput("plt_annual_death", height = "300px")))
       ),
       
+      
+      
+      ####### this is a start of a page "country profile" ----------------
+      
+      tabPanel("Country Profile",
+               
+               fluidRow(
+                 
+                 column(6,
+                        strong("Description"),
+                        "This page consolidates world bank data with COVID-19 cases, we mainly focus on indicators that would help us better understand the capacity of the healthcare system and how much it is stressed.", br(), 
+                        strong("Formula"), "Active Cases = Confirmed Cases - (Death Cases + Recovered Cases)"),
+                 column(6,
+                        strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                        "The data is sourced from ",
+                        a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank")," and ",
+                        a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".", br(),
+                        
+                        
+                        strong("Feedback"),
+                        "Please contact us on ",
+                        a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                        a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                 
+                 
+               ), br(),
+               
+               fluidRow(
+                 
+                 column(2,
+                        pickerInput(inputId = "country8", 
+                                    label = "Country",
+                                    choices = wb_dt$Country %>% unique() %>% sort(),
+                                    selected = "Italy",
+                                    options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                   liveSearchStyle = 'contains'),
+                                    multiple = FALSE))
+                 
+               ),br(),
+               
+               
+               fluidRow(
+                column(5,plotOutput("plt_cp_confirmed", height = "300px")),
+                column(5,plotOutput("plt_cp_death", height = "300px")),
+                column(2,tableOutput("oxford_info"),
+                       useShinyjs(),
+                       inlineCSS(list("table" = "font-size:10px")))
+                 ), br(),br(),
+               fluidRow(
+                 column(5,plotOutput("plt_death_reason", height = "300px"))#,
+                # column(4, plotOutput("plt_daily_death", height = "300px")),
+                # column(4, plotOutput("plt_annual_death", height = "300px"))
+                 )
+      ),
+      
                 
-      ####### this is a start of a page ----------------
+      ####### this is a start of a page "State/Province"----------------
       
                 tabPanel("State/Province - Day Zero",
                          
@@ -500,7 +563,8 @@ ui <- navbarPage("COVID-19 Application",
                                   
                                   pickerInput(inputId = "detail_country",
                                               label = "Country",
-                                              choices = c("Australia", "China"),#unique(country_state_list$country_region),
+                                              choices = #c("Australia", "China"),
+                                                unique(country_state_list$country_region),
                                               selected = "Australia",
                                               options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                              liveSearchStyle = 'contains'),
@@ -608,10 +672,12 @@ server <- function(input, output, session) {
       
       if(length(input$region0) == 0){
       
+        country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country0",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country0,
+                          selected = c("US", "Italy"))  
         
           
       }else if(input$region0 > 0){
@@ -621,7 +687,7 @@ server <- function(input, output, session) {
       updatePickerInput(session = session,
                         inputId = "country0",
                         choices = country0,
-                        selected = country0)
+                        selected = NULL)
                        
       }
     
@@ -693,10 +759,12 @@ server <- function(input, output, session) {
     
     if(length(input$region) == 0){
       
+      country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
+      
       updatePickerInput(session = session,
                         inputId = "country",
-                        choices = NULL,
-                        selected = NULL)  
+                        choices = country,
+                        selected = c("US", "Italy"))  
       
       
     }else if(input$region > 0){
@@ -706,7 +774,7 @@ server <- function(input, output, session) {
       updatePickerInput(session = session,
                         inputId = "country",
                         choices = country,
-                        selected = country)
+                        selected = NULL)
       
     }
     
@@ -755,10 +823,12 @@ server <- function(input, output, session) {
       
       if(length(input$region2) == 0){
         
+        country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country2",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country2,
+                          selected = c("US", "Italy"))  
         
         
       }else if(input$region2 > 0){
@@ -768,7 +838,7 @@ server <- function(input, output, session) {
         updatePickerInput(session = session,
                           inputId = "country2",
                           choices = country2,
-                          selected = country2)
+                          selected = NULL)
         
       }
       
@@ -819,10 +889,12 @@ server <- function(input, output, session) {
       
       if(length(input$region3) == 0){
         
+        country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country3",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country3,
+                          selected = c("US","Italy"))  
         
         
       }else if(input$region3 > 0){
@@ -832,7 +904,7 @@ server <- function(input, output, session) {
         updatePickerInput(session = session,
                           inputId = "country3",
                           choices = country3,
-                          selected = country3)
+                          selected = NULL)
         
       }
       
@@ -873,20 +945,22 @@ server <- function(input, output, session) {
       
       if(length(input$region7) == 0){
         
+        country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
+        
         updatePickerInput(session = session,
                           inputId = "country7",
-                          choices = NULL,
-                          selected = NULL)  
+                          choices = country7,
+                          selected = c("Italy", "US"))  
         
         
-      }else if(input$region3 > 0){
+      }else if(input$region7 > 0){
         
         country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
         
         updatePickerInput(session = session,
                           inputId = "country7",
                           choices = country7,
-                          selected = country7)
+                          selected = NULL)
         
       }
       
@@ -932,6 +1006,32 @@ server <- function(input, output, session) {
 
     
 
+    
+    ### country profile page ---------
+    
+    output$plt_cp_confirmed <- renderPlot({
+      req(input$country8)
+      
+      plot_cp_day(c = input$country8, a = "Confirmed Cases")
+    })
+    
+    output$plt_cp_death <- renderPlot({
+      req(input$country8)
+      
+      plot_cp_day(c = input$country8, a = "Death Cases")
+    })
+    
+    output$oxford_info <- renderTable({
+      oxford_dt %>% distinct(variable, vari) %>% rename("Policy" = "variable", "Abbreviation" ="vari")
+    })
+    
+    
+    output$plt_death_reason <- renderPlot({
+      req(input$country8)
+      
+      plot_death_con(c = input$country8)
+    })
+    
     ########## State HERE -------------
     
     pass_day_dt_sp <- reactive({
@@ -943,7 +1043,8 @@ server <- function(input, output, session) {
     
     output$plt_pass_day_sp <- renderPlot({
       req(#input$level, 
-        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4)
+        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4, 
+        input$detail_country,input$detail_state)
       # ggplotly(
       plot_day_passed_day(df = pass_day_dt_sp(), m = input$measure4, a = input$aspect4, g = tabinfo(), min_case = input$min_case4
       )#, tooltip = "text") %>%
@@ -952,7 +1053,8 @@ server <- function(input, output, session) {
     
     output$plt_per_capita_sp <- renderPlot({
       req(#input$level, 
-        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4)
+        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4, 
+        input$detail_country,input$detail_state)
       # ggplotly(
       plot_per_capita(df = pass_day_dt_sp(), m = input$measure4,  a = input$aspect4, g = tabinfo(), min_case = input$min_case4
       )#, tooltip = "text") %>%

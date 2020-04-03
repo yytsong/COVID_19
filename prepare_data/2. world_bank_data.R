@@ -105,7 +105,7 @@ wb_data %>%
          physicians = physicians * population/1000)
 
 
-country_code <- read_excel("data/country_code.xlsx")  %>% 
+country_code <- read_excel("prepare_data/country_code.xlsx")  %>% 
   select(Country, `Alpha-2 code`, `Alpha-3 code`)
 
 # setdiff(region_country_list$country_region,country_code$Country )
@@ -117,6 +117,7 @@ wb_dt <- wb_cs %>%
 
 
 ### new heath measures
+### source ??? ask behrooz
 
 
 files <- list.files(path = "~/Dropbox/COVID_19/Other/Explore/", pattern = ".csv")
@@ -146,9 +147,25 @@ add_wb <-
 
 wb_dt_final <- wb_dt %>% 
   left_join(add_wb, by =c("Alpha-3 code"="Code")) %>% 
-  select(Country, region, income, population:ncol(.)) 
+  select(Country, `Alpha-3 code`, region, income, population:ncol(.)) 
 
 write_csv(wb_dt_final, str_c("data/wb_data_", Sys.Date(), ".csv"))
+
+
+
+
+
+
+# ### source https://www.r-bloggers.com/meet-tidycovid19-yet-another-covid-19-related-r-package/
+# ### connect to https://www.acaps.org/covid19-government-measures-dataset
+# library(tidycovid19)
+# 
+# acaps_npi <- download_acaps_npi_data()
+# 
+# category_npi <- acaps_npi %>%
+#   distinct(category, measure) %>%
+#   arrange(category, measure)
+
 
 
 

@@ -1,6 +1,7 @@
-# prepare data
-
-# c <-c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
+# # prepare data
+# 
+# c <- "Italy"
+# c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
 # #dt$country_region %>% unique()
 # p <- dt %>% filter(country_region %in% c) %>% distinct(province_state) %>% pull()
 # m <- "Cumulative Cases"
@@ -14,8 +15,57 @@
 # ym <-  "Recovered Cases"
 # ya <-  "Per Capita (10 Million)"
 # r <- "Recovery Percentage"
-# min_case <- 500
+# min_case <- 100
 
+
+# # fomratting functions for scales
+# si_num <- function (x) {
+#   
+#   if (!is.na(x)) {
+#     
+#     if (x < 0){ 
+#       sign <-  "-"
+#       x <- abs(x)
+#     }else{
+#       sign <-  ""
+#       x <- x
+#     }
+#     
+#     
+#     if (x >= 1e9) { 
+#       chrs <- strsplit(format(x, scientific=12), split="")[[1]];
+#       len <- chrs[seq(1,length(chrs)-9)] %>% length();
+#       rem <- chrs[seq(1,length(chrs)-8)];
+#       rem <- append(rem, ".", after = len) %>% append("B");
+#     }
+#     
+#     
+#     else if (x >= 1e6) { 
+#       chrs <- strsplit(format(x, scientific=12), split="")[[1]];
+#       len <- chrs[seq(1,length(chrs)-6)] %>% length();
+#       rem <- chrs[seq(1,length(chrs)-5)]
+#       rem <- append(rem, ".", after = len) %>% append("M");
+#     }
+#     
+#     else if (x >= 1e3) { 
+#       chrs <- strsplit(format(x, scientific=12), split="")[[1]];
+#       len <- chrs[seq(1,length(chrs)-3)] %>% length();
+#       rem <- chrs[seq(1,length(chrs)-2)];
+#       rem <- append(rem, ".", after = len) %>% append("K");
+#     }
+#     
+#     else {
+#       return(x);
+#     }
+#     
+#     return(str_c(sign, paste(rem, sep="", collapse=""), sep = ""));
+#   }
+#   else return(NA);
+# } 
+# 
+# si_vec <- function(x) {
+#   sapply(x, FUN=si_num);
+# }
 
 
 ############# World HERE
@@ -478,88 +528,11 @@ filtered_state_data <- function(s, a, g, min_case){
   
 }
 
-# fomratting functions for scales
-si_num <- function (x) {
-  
-  if (!is.na(x)) {
-    
-    if (x < 0){ 
-      sign <-  "-"
-      x <- abs(x)
-    }else{
-      sign <-  ""
-      x <- x
-    }
-    
-    
-    if (x >= 1e9) { 
-      chrs <- strsplit(format(x, scientific=12), split="")[[1]];
-      len <- chrs[seq(1,length(chrs)-9)] %>% length();
-      rem <- chrs[seq(1,length(chrs)-8)];
-      rem <- append(rem, ".", after = len) %>% append("B");
-    }
-    
-    
-    else if (x >= 1e6) { 
-      chrs <- strsplit(format(x, scientific=12), split="")[[1]];
-      len <- chrs[seq(1,length(chrs)-6)] %>% length();
-      rem <- chrs[seq(1,length(chrs)-5)]
-      rem <- append(rem, ".", after = len) %>% append("M");
-    }
-    
-    else if (x >= 1e3) { 
-      chrs <- strsplit(format(x, scientific=12), split="")[[1]];
-      len <- chrs[seq(1,length(chrs)-3)] %>% length();
-      rem <- chrs[seq(1,length(chrs)-2)];
-      rem <- append(rem, ".", after = len) %>% append("K");
-    }
-    
-    else {
-      return(x);
-    }
-    
-    return(str_c(sign, paste(rem, sep="", collapse=""), sep = ""));
-  }
-  else return(NA);
-} 
 
-si_vec <- function(x) {
-  sapply(x, FUN=si_num);
-}
 
 
 # find max cumulative_cases for top countries
-country_sorted_by_cases <- dt %>%
-  group_by(`country_region`, Date) %>% 
-  summarise(cumulative_cases = sum(confirmed_cases)) %>% 
-  ungroup() %>% 
-  group_by(country_region) %>% 
-  filter(cumulative_cases == max(cumulative_cases, na.rm = TRUE)) %>% 
-  filter(Date == max(Date)) %>% 
-  arrange(desc(cumulative_cases)) %>% 
-  pull(country_region)
 
-
-us_state_sorted_by_cases <- us_dt %>%
-  group_by(state) %>% 
-  filter(confirmed_cases == max(confirmed_cases, na.rm = TRUE)) %>% 
-  filter(Date == max(Date)) %>% 
-  arrange(desc(confirmed_cases)) %>% 
-  pull(state)
-
-au_state_sorted_by_cases <- au_dt %>%
-  group_by(state) %>% 
-  filter(confirmed_cases == max(confirmed_cases, na.rm = TRUE)) %>% 
-  filter(Date == max(Date)) %>% 
-  arrange(desc(confirmed_cases)) %>% 
-  pull(state)
-
-ch_state_sorted_by_cases <- ch_dt %>%
-  group_by(state) %>% 
-  filter(confirmed_cases == max(confirmed_cases, na.rm = TRUE)) %>% 
-  filter(Date == max(Date)) %>% 
-  arrange(desc(confirmed_cases)) %>% 
-  pull(state)
 
 c25 <- rep (c(
   "dodgerblue2", "#E31A1C", # red
@@ -646,7 +619,6 @@ plot_health_measure <- function(c, m){
   
 }
 
-
 plot_death_crude <- function(c, m){
   
   if(m == "new"){
@@ -688,6 +660,122 @@ plot_death_crude <- function(c, m){
           title = str_c ("COVID-19 ", ytitle, "\n","@ ", latest_date," AEDT", " (Y-axis is logged)"),
           y = ytitle)
   
+}
+
+
+### country profile
+
+plot_cp_day <- function(c, a){
+  
+  if(identical(a, "Confirmed Cases")){
+    aspect <- sym("confirmed_cases")
+  }else if(identical(a, "Death Cases")){
+    aspect <- sym("death_cases")
+  }else{
+    aspect <- sym("recovered_cases")
+  }
+  
+  
+  df <- wb_dt %>% 
+    filter(Country == c) %>% 
+    select(Country, `Alpha-3 code`, Date, confirmed_cases:active_cases) %>% 
+    rename("cumulative_cases" = aspect) %>% 
+    mutate(incident_cases = ifelse(is.na(lag(cumulative_cases)), cumulative_cases , cumulative_cases - lag(cumulative_cases))) %>% 
+    select(Country, `Alpha-3 code`, Date, incident_cases)
+  
+  label_dt <- oxford_dt %>% 
+    filter(CountryCode == unique(df$`Alpha-3 code`), !is.na(vari),
+           !is.na(value), value >0) %>% 
+    group_by(Country, CountryCode, vari, value) %>% 
+    slice(1) %>% 
+    mutate(text = str_c(vari, ": ", value)) %>% 
+    ungroup() %>% 
+    group_by(CountryCode, Date) %>% 
+    summarise(text = paste(text, collapse = "\n")) %>% 
+    ungroup() %>% 
+    right_join(df, by = c("CountryCode" = "Alpha-3 code", "Date"))
+  
+  label_dt %>% 
+    ggplot(aes(x = Date, y = incident_cases, group = Country, label = text))+
+    geom_col(fill = "grey60", color = "white", alpha = 0.7)+
+    geom_text_repel(min.segment.length = 0, size = 4,
+                   force = 1, #point.padding = unit(1, 'lines'),
+                   vjust = 1, direction = 'y', nudge_y =  1)+
+    scale_y_continuous(labels = si_vec) +
+    labs(x = "", y = str_c("Number of Daily ", a),
+         title = str_c("COVID-19 Daily ", a, " - ",c, " @ ", latest_date, " AEDT"),
+         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Oxford University"))+
+    theme(legend.position = "none",
+          axis.text = element_text(size = 11),
+          axis.title = element_text(size = 12),
+          title = element_text(size = 13))
+  
+
+}
+
+plot_death_con <- function(c){
+  
+ df1 <-  wb_dt %>% 
+   rename("COVID19 Death" = "death_cases") %>% 
+    filter(Country == c, Date == max(Date)) %>% 
+    select(Country, `Alpha-3 code`, population, contains("deaths"), Date, `COVID19 Death`) %>%
+    pivot_longer(cols = contains("death"), names_to = "Death Condition", values_to = "Value") %>% 
+   mutate(value = format(as.integer(Value), big.mark = ","), 
+          `Death Condition` = str_remove(`Death Condition`, pattern = " \\(deaths\\)")) 
+ 
+ rbind(df1 %>% filter(`Death Condition` == "COVID19 Death"),df1 %>% top_n(n = 10, wt = Value)) %>% 
+   distinct() %>% 
+   arrange(desc(Value)) %>% 
+  # mutate(`Death Condition` = str_wrap(`Death Condition`, width = 30)) %>% 
+   ggplot(aes(x = fct_reorder(`Death Condition`, Value), y = Value, group = `Death Condition`,
+              fill = factor(ifelse(`Death Condition` == "COVID19 Death", "focused", "other"))))+
+   geom_col(color = "white", alpha = 0.7) +
+   geom_text(aes(label =value, 
+                 color = factor(ifelse(`Death Condition` == "COVID19 Death", "focused", "other"))),
+             hjust = 1)+
+   scale_y_continuous(labels = si_vec) +
+   scale_fill_manual(name = "Focus", values = c("tomato3", "grey60"))+
+   scale_color_manual(name = "Focus", values = c("firebrick4", "black"))+
+   labs(x = "", y = "", #str_c("Number of Weekly Death"),
+        title = str_c ("Top 10 Death Conditions vs. COVID-19 Death Cases - ",c, " @ ", latest_date, " AEDT"),
+        caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Oxford University"))+
+   theme(legend.position = "none",
+         axis.text.x = element_text(angle = 90),
+         axis.text = element_text(size = 11),
+         axis.title = element_text(size = 12),
+         title = element_text(size = 13)) +
+   coord_flip()
+  
+}
+
+plot_cp_radar <- function(c){
+
+    plt_radar_dt <- radar_dt %>%
+      group_by(Country) %>%
+      pivot_wider(names_from = "Plot.title", values_from = "value") %>%
+      ungroup() %>%
+      column_to_rownames(var = "Country") %>%
+      rbind(rep(1,11), rep(0,11), .) %>%
+      .[c(1,2,c),]
+
+    radarchart(plt_radar_dt,
+               #custom polygon
+               pcol=country_color , #pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 ,
+               
+               #custom the grid
+               cglcol="grey80", cglty=1, axislabcol="grey80", caxislabels=seq(0,1,0.2),
+               cglwd=0.8,
+               
+               #custom labels
+              vlcex=0.8,
+              title= str_c("Country Profile - ",c)
+    )
+    
+    
+    
+#    legend(x=1.4, y=1, legend = rownames(plt_radar_dt[-c(1,2),]), bty = "n", pch=20 , col=country_color , text.col = "grey", cex=1.2, pt.cex=3)
+
+
 }
 
 

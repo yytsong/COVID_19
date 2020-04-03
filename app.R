@@ -1,29 +1,25 @@
 
 library(shiny)
 library(shinyWidgets)
+library(shinyjs)
 library(tidyverse)
 library(scales)
-# library(plotly)
 library(data.table)
 library(lubridate)
 library(ggrepel)
 library(xml2)
-#library(rsconnect)
 library(bit64)
-#library(gganimate)
-#library(gifski)
-#library(png)
-#library(maps)
 library(RCurl)
 library(httr)
 library(readxl)
 library(wbstats)
-#library(ggalluvial)
+library(DT)
+library(fmsb)
 pkgload::load_all(path= "GAlogger/")
 theme_set(theme_minimal())
-#library(tidylog)
 source("R/0. load_data_jhu.R")
 source("R/1. functions.R")
+
 
 
 
@@ -58,7 +54,6 @@ ui <- navbarPage("COVID-19 Application",
       ####### this is a start of a page "About" ----------------
                 tabPanel("About",
                          # br(), 
-                         # tags$strong(style="color: red", str_c("THERE IS CURRENTLY AN ISSUE WITH THE SOURCE DATA AS THE LASTEST UPDATES OF CONFIRMED AND DEATH CASES IS ON ", latest_date, " BUT FOR RECOVERED CASES IS ON ", recovery_latest_day, ".")),br(),
                          # tags$strong(style="color: red", str_c("WE ARE ALSO EXPERIENCING A HIGH VOLUME OF SESSIONS ON OUR DASHBOARD. IF YOU RECEIVE A SERVER DISCONNECTION MESSAGE, WE ARE VERY SORRY FOR THAT. WE DID NOT EXPECT THIS LEVEL OF INTEREST AND WE ARE TRYING TO FIX THIS ISSUE ASAP.")),br(),
                          # tags$strong(style="color: red", "We have updated all the figure titles to reflect the latest day. We will monitor the situation and update accordingly."),br(),
                          # 
@@ -100,15 +95,16 @@ ui <- navbarPage("COVID-19 Application",
                          br(), 
                                 strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
                                 "The data is sourced from ",
-                                a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank")," and ",
+                                a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),", ",
                                # a(href="https://github.com/nytimes/covid-19-data","New York Times", target = "_blank")," (US State), and ", 
-                                a(href="https://data.worldbank.org","World Bank", target = "_blank"), ".",br(),
+                                a(href="https://data.worldbank.org","World Bank", target = "_blank"), " and ",
+                       a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".",br(),
+                       
                                 
                                 strong("Feedback"),
                                 "Please contact us on ",
                                 a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
                                 a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".", br(),
-                       
                        strong("Project"),
                        "This project is avaliable at",
                        a(href="https://rstudio.cloud/project/1029711","RStudio Cloud Project.", target = "_blank"), 
@@ -474,6 +470,61 @@ ui <- navbarPage("COVID-19 Application",
                  column(4,plotOutput("plt_nurse", height = "300px")),
                  column(4, plotOutput("plt_daily_death", height = "300px")),
                  column(4, plotOutput("plt_annual_death", height = "300px")))
+      ),
+      
+      
+      
+      ####### this is a start of a page "country profile" ----------------
+      
+      tabPanel("Country Profile",
+               
+               fluidRow(
+                 
+                 column(6,
+                        strong("Description"),
+                        "This page consolidates world bank data with COVID-19 cases, we mainly focus on indicators that would help us better understand the capacity of the healthcare system and how much it is stressed.", br(), 
+                        strong("Formula"), "Active Cases = Confirmed Cases - (Death Cases + Recovered Cases)"),
+                 column(6,
+                        strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                        "The data is sourced from ",
+                        a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank")," and ",
+                        a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".", br(),
+                        
+                        
+                        strong("Feedback"),
+                        "Please contact us on ",
+                        a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                        a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                 
+                 
+               ), br(),
+               
+               fluidRow(
+                 
+                 column(2,
+                        pickerInput(inputId = "country8", 
+                                    label = "Country",
+                                    choices = wb_dt$Country %>% unique() %>% sort(),
+                                    selected = "Italy",
+                                    options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                   liveSearchStyle = 'contains'),
+                                    multiple = FALSE))
+                 
+               ),br(),
+               
+               
+               fluidRow(
+                column(6,plotOutput("plt_cp_confirmed", height = "300px")),
+                column(6,plotOutput("plt_cp_death", height = "300px"))#,
+                 ), br(),br(),
+               fluidRow(
+                 column(2,tableOutput("oxford_info"),
+                        useShinyjs(),
+                        inlineCSS(list("table" = "font-size:10px"))),
+                 column(4,plotOutput("plt_cp_radar", height = "400px")),
+                 column(5, plotOutput("plt_death_reason", height = "300px"))#,
+                # column(4, plotOutput("plt_annual_death", height = "300px"))
+                 )
       ),
       
                 
@@ -949,6 +1000,40 @@ server <- function(input, output, session) {
 
     
 
+    
+    ### country profile page ---------
+    
+    output$plt_cp_confirmed <- renderPlot({
+      req(input$country8)
+      
+      plot_cp_day(c = input$country8, a = "Confirmed Cases")
+    })
+    
+    output$plt_cp_death <- renderPlot({
+      req(input$country8)
+      
+      plot_cp_day(c = input$country8, a = "Death Cases")
+    })
+    
+    output$oxford_info <- renderTable({
+      oxford_dt %>% distinct(variable, vari) %>% rename("Policy" = "variable", "Abbreviation" ="vari")
+    })
+    
+    
+    output$plt_death_reason <- renderPlot({
+      req(input$country8)
+      
+      plot_death_con(c = input$country8)
+    })
+    
+    
+    
+    output$plt_cp_radar <- renderPlot({
+      req(input$country8)
+      
+      plot_cp_radar(c= input$country8)
+    })
+    
     ########## State HERE -------------
     
     pass_day_dt_sp <- reactive({
