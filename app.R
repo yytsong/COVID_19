@@ -36,16 +36,16 @@ ui <- navbarPage("COVID-19 Application",
                  
                 #header =singleton(tags$head(includeHTML("google-analytics.html"))),
                  
-             #    tags$style(type = 'text/css',
-              #              '.navbar { background-color: skyblue;}',
-              #              '.navbar-default .navbar-brand{color: white;}',
-              #              '.tab-panel{ background-color: red; color: white}',
-              #              '.nav navbar-nav li.active:hover a, .nav navbar-nav li.active a {
-              #          background-color: green ;
-              #          border-color: green;
-              #          }'
+                tags$style(type = 'text/css',
+                          '.navbar { background-color: skyblue;}',
+                          '.navbar-default .navbar-brand{color: white;}',
+                          '.tab-panel{ background-color: red; color: white}',
+                          '.nav navbar-nav li.active:hover a, .nav navbar-nav li.active a {
+                      background-color: green ;
+                      border-color: green;
+                      }'
 
-               #  ),
+                ),
 
                  
                 # fluid = FALSE,
@@ -59,6 +59,26 @@ ui <- navbarPage("COVID-19 Application",
                          # 
                          # 
                          # br(), 
+                         
+                         
+                         strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                         "The data is sourced from ",
+                         a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),", ",
+                         # a(href="https://github.com/nytimes/covid-19-data","New York Times", target = "_blank")," (US State), and ", 
+                         a(href="https://data.worldbank.org","World Bank", target = "_blank"), " and ",
+                         a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".",br(),
+                         
+                         
+                         strong("Feedback"),
+                         "Please contact us on ",
+                         a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                         a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".", br(),
+                         strong("Project"),
+                         "This project is avaliable at",
+                         a(href="https://github.com/yytsong/COVID_19","Github Project.", target = "_blank") ,br(),br(),
+                         
+                         
+                         
                          strong("How to Use this APP"), br(),
                          "We have developed this app to provide live data on the trends of COVID-19 coronavirus. The app provides you with a range of analysis and visualisations that enable you to track the spread of virus around the world and helps you get a sense of the patterns across different countries and regions",
                          br(), br(),
@@ -87,27 +107,12 @@ ui <- navbarPage("COVID-19 Application",
                          strong ("World - Day Zero:"),"This page presents the number of cases (reported, deaths, recoveries) in actual and per capita terms. You can add or remove countries and compare them. The x-axis is number of days since the first case was reported which provides you with an opportunity to understand how long it has taken a country to reach a specific number of cases. You can change this number to be a higher value, for example, days since the 100th case was reported.",br(),br(),
                          strong ("World - Growth:"),"This page attempts to present a basic model to predict the number of new cases every day compared to the total number of cases the day before. The graphs can be used to compare the growth rate of reported, death or recovery cases across countries. The plot on the right hand side compares the growth rate of each country with a fixed line to help identifying countries with high or low growth patterns.",br(),br(),
                          strong ("World - Ratio:"),"This page helps you to follow the death and recovery ratios across countries and over time. Please notice that the recovry data has some issues which seem to be due to different reporting practices.",br(),br(),
-                         strong ("World - Healthcare"),"We aim to provide a range of data, mainly sourced from World Bank data, to help provide a better understanding of the capacity of healthcare systems to cope with the outbreak.",br(),br(),
+                         strong ("World - Healthcare:"),"We aim to provide a range of data, mainly sourced from World Bank data, to help provide a better understanding of the capacity of healthcare systems to cope with the outbreak.",br(),br(),
+                         strong ("World - Policy:"),"We have mapped the policy repsonses implemented in each country against the trends for cases and deaths.",br(),br(),
+                         strong ("AUS-US-CHN Day Zero:"),"These graphs are very similar to World Day Zero, however, since the sub-region (province/state) data is available for some counntries we have provided the graph at the next level."
                        
-                         strong ("AUS-US-CHN Day Zero"),"These graphs are very similar to World Day Zero, however, since the sub-region (province/state) data is available for some counntries we have provided the graph at the next level.",br(),br(),
-                       
-                         
-                         br(), 
-                                strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
-                                "The data is sourced from ",
-                                a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),", ",
-                               # a(href="https://github.com/nytimes/covid-19-data","New York Times", target = "_blank")," (US State), and ", 
-                                a(href="https://data.worldbank.org","World Bank", target = "_blank"), " and ",
-                       a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".",br(),
-                       
-                                
-                                strong("Feedback"),
-                                "Please contact us on ",
-                                a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
-                                a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".", br(),
-                       strong("Project"),
-                       "This project is avaliable at",
-                       a(href="https://rstudio.cloud/project/1029711","RStudio Cloud Project.", target = "_blank"), 
+                
+
                          
                          ),
                 
@@ -476,14 +481,13 @@ ui <- navbarPage("COVID-19 Application",
       
       ####### this is a start of a page "country profile" ----------------
       
-      tabPanel("Country Profile",
+      tabPanel("World - Policy and Profile",
                
                fluidRow(
                  
                  column(6,
                         strong("Description"),
-                        "This page consolidates world bank data with COVID-19 cases, we mainly focus on indicators that would help us better understand the capacity of the healthcare system and how much it is stressed.", br(), 
-                        strong("Formula"), "Active Cases = Confirmed Cases - (Death Cases + Recovered Cases)"),
+                        "This page provides data on the policy responses of each country mapped against the number of cases and deaths. You can also compare countries in terms of their level of preparedness to the pandemic, using a set of indicators normalised across all countries. This page also provides you with data on the position of COVID-19 as a cause of death against the top 10 causes of death in each country.", br()),
                  column(6,
                         strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
                         "The data is sourced from ",
@@ -503,25 +507,34 @@ ui <- navbarPage("COVID-19 Application",
                  
                  column(2,
                         pickerInput(inputId = "country8", 
-                                    label = "Country",
+                                    label = "Country (Select Multiple to Compare)",
                                     choices = wb_dt$Country %>% unique() %>% sort(),
                                     selected = "Italy",
                                     options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                    liveSearchStyle = 'contains'),
-                                    multiple = FALSE))
+                                    multiple = TRUE))
                  
                ),br(),
                
                
                fluidRow(
-                column(6,plotOutput("plt_cp_confirmed", height = "300px")),
-                column(6,plotOutput("plt_cp_death", height = "300px"))#,
-                 ), br(),br(),
-               fluidRow(
                  column(2,tableOutput("oxford_info"),
                         useShinyjs(),
                         inlineCSS(list("table" = "font-size:10px"))),
-                 column(4,plotOutput("plt_cp_radar", height = "400px")),
+                column(5,plotOutput("plt_cp_confirmed", height = "500px")),
+                column(5,plotOutput("plt_cp_death", height = "500px"))#,
+                 ), br(),br(),
+               fluidRow(
+                
+
+                column(4, plotOutput("plt_cp_radar", height = "400px")),
+                column(3,
+                       strong("Left: "), br(),br(),
+                       "The value indicates the relative position of a selected country against all other countries. When a country has a higher value across each of the measures, it is interpreted as being more ready in facing the pandemic", br(),br(),
+                       "Urban Population, Population Age >= 65, and Vulnerable Employment (Male and Female) scales have been reverted to refelct their readiness.", br(),br(),
+                strong("Right: "), br(),br(),
+                "The top 10 causes of death are presented for each country and COVID-19 is added to provide an opportunity for benchmarking."),
+                
                  column(5, plotOutput("plt_death_reason", height = "300px"))#,
                 # column(4, plotOutput("plt_annual_death", height = "300px"))
                  )

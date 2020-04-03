@@ -1,7 +1,7 @@
-# # prepare data
-# 
-# c <- "Italy"
-# c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
+# prepare data
+
+# c <- c("Italy", "China")
+# #c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
 # #dt$country_region %>% unique()
 # p <- dt %>% filter(country_region %in% c) %>% distinct(province_state) %>% pull()
 # m <- "Cumulative Cases"
@@ -676,19 +676,27 @@ plot_cp_day <- function(c, a){
   }
   
   
+  earliest_date <- wb_dt %>% 
+    filter(Country %in% c, confirmed_cases> 9) 
+  
   df <- wb_dt %>% 
-    filter(Country == c) %>% 
+    filter(Country %in% c, Date >= min(earliest_date$Date), confirmed_cases > 9
+           ) %>% 
     select(Country, `Alpha-3 code`, Date, confirmed_cases:active_cases) %>% 
     rename("cumulative_cases" = aspect) %>% 
+    group_by(Country) %>% 
     mutate(incident_cases = ifelse(is.na(lag(cumulative_cases)), cumulative_cases , cumulative_cases - lag(cumulative_cases))) %>% 
+    ungroup() %>% 
     select(Country, `Alpha-3 code`, Date, incident_cases)
   
+
+  
   label_dt <- oxford_dt %>% 
-    filter(CountryCode == unique(df$`Alpha-3 code`), !is.na(vari),
+    filter(CountryCode %in% unique(df$`Alpha-3 code`), !is.na(vari),
            !is.na(value), value >0) %>% 
     group_by(Country, CountryCode, vari, value) %>% 
     slice(1) %>% 
-    mutate(text = str_c(vari, ": ", value)) %>% 
+    mutate(text = str_c(vari, " ", value)) %>% 
     ungroup() %>% 
     group_by(CountryCode, Date) %>% 
     summarise(text = paste(text, collapse = "\n")) %>% 
@@ -702,8 +710,9 @@ plot_cp_day <- function(c, a){
                    force = 1, #point.padding = unit(1, 'lines'),
                    vjust = 1, direction = 'y', nudge_y =  1)+
     scale_y_continuous(labels = si_vec) +
+    facet_wrap(~Country, ncol = 1, scales = "free_y")+
     labs(x = "", y = str_c("Number of Daily ", a),
-         title = str_c("COVID-19 Daily ", a, " - ",c, " @ ", latest_date, " AEDT"),
+         title = str_c("COVID-19 Daily ", a, " @ ", latest_date, " AEDT"),
          caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Oxford University"))+
     theme(legend.position = "none",
           axis.text = element_text(size = 11),
@@ -717,31 +726,36 @@ plot_death_con <- function(c){
   
  df1 <-  wb_dt %>% 
    rename("COVID19 Death" = "death_cases") %>% 
-    filter(Country == c, Date == max(Date)) %>% 
+    filter(Country %in% c, Date == max(Date)) %>% 
     select(Country, `Alpha-3 code`, population, contains("deaths"), Date, `COVID19 Death`) %>%
     pivot_longer(cols = contains("death"), names_to = "Death Condition", values_to = "Value") %>% 
-   mutate(value = format(as.integer(Value), big.mark = ","), 
+   mutate(value = si_vec(round(Value,0)),
+            #format(as.integer(Value), big.mark = ","), 
           `Death Condition` = str_remove(`Death Condition`, pattern = " \\(deaths\\)")) 
  
- rbind(df1 %>% filter(`Death Condition` == "COVID19 Death"),df1 %>% top_n(n = 10, wt = Value)) %>% 
+ rbind(df1 %>% filter(`Death Condition` == "COVID19 Death"),
+       df1 %>% group_by(Country) %>% top_n(n = 10, wt = Value) %>% ungroup()) %>% 
    distinct() %>% 
-   arrange(desc(Value)) %>% 
-  # mutate(`Death Condition` = str_wrap(`Death Condition`, width = 30)) %>% 
-   ggplot(aes(x = fct_reorder(`Death Condition`, Value), y = Value, group = `Death Condition`,
+   arrange(Country, desc(Value)) %>% 
+   group_by(Country) %>% 
+   ggplot(aes(x = fct_reorder(`Death Condition`, Value), y = Value, group = Country,
               fill = factor(ifelse(`Death Condition` == "COVID19 Death", "focused", "other"))))+
    geom_col(color = "white", alpha = 0.7) +
-   geom_text(aes(label =value, 
+   geom_text(aes(label =value, y = 10,
                  color = factor(ifelse(`Death Condition` == "COVID19 Death", "focused", "other"))),
-             hjust = 1)+
+            hjust = 0
+             )+
    scale_y_continuous(labels = si_vec) +
    scale_fill_manual(name = "Focus", values = c("tomato3", "grey60"))+
    scale_color_manual(name = "Focus", values = c("firebrick4", "black"))+
+   facet_wrap(~Country, ncol = 2, scales = "free_x")+
    labs(x = "", y = "", #str_c("Number of Weekly Death"),
-        title = str_c ("Top 10 Death Conditions vs. COVID-19 Death Cases - ",c, " @ ", latest_date, " AEDT"),
+        title = str_c ("Top 10 Causes of Death and COVID-19 Death Cases" ," @ ", latest_date, " AEDT"),
         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Oxford University"))+
    theme(legend.position = "none",
-         axis.text.x = element_text(angle = 90),
+        # axis.text.x = element_text(angle = 90),
          axis.text = element_text(size = 11),
+         axis.text.x = element_blank(),
          axis.title = element_text(size = 12),
          title = element_text(size = 13)) +
    coord_flip()
@@ -756,7 +770,8 @@ plot_cp_radar <- function(c){
       ungroup() %>%
       column_to_rownames(var = "Country") %>%
       rbind(rep(1,11), rep(0,11), .) %>%
-      .[c(1,2,c),]
+      .[c(1,2,c),] %>% 
+      select(-`\nCOVID19\nDeath Rate`)
 
     radarchart(plt_radar_dt,
                #custom polygon
@@ -768,12 +783,14 @@ plot_cp_radar <- function(c){
                
                #custom labels
               vlcex=0.8,
-              title= str_c("Country Profile - ",c)
+              title= str_c("Country Readiness")
     )
     
+if(length(c) == 1){}else{
+  legend(x=1.4, y=1, legend = rownames(plt_radar_dt[-c(1,2),]), bty = "n", pch=20 , col=country_color , text.col = "grey", cex=1.2, pt.cex=3)
+  
+}    
     
-    
-#    legend(x=1.4, y=1, legend = rownames(plt_radar_dt[-c(1,2),]), bty = "n", pch=20 , col=country_color , text.col = "grey", cex=1.2, pt.cex=3)
 
 
 }

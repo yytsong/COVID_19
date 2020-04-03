@@ -1,6 +1,21 @@
 {
     "debugBreakpointsState" : {
         "breakpoints" : [
+            {
+                "editor_line_number" : 715,
+                "editor_state" : 2,
+                "function_name" : "plot_cp_day",
+                "function_steps" : "",
+                "id" : 0,
+                "is_package_breakpoint" : false,
+                "is_pending_debug_completion" : false,
+                "line_number" : 715,
+                "needs_updated_steps" : false,
+                "package_name" : "",
+                "path" : "~/Dropbox/COVID_19/R/1. functions.R",
+                "state" : 2,
+                "type" : 0
+            }
         ]
     }
 }

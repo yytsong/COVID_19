@@ -158,25 +158,10 @@ si_vec <- function(x) {
 ###### policy data-------------
 ### additional source from OXFORD https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker
 
-oxford_dt <- read_excel("data/OxCGRT_Download_latest_data.xlsx") %>% 
-  select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "...35", "Confirmed"))) %>% 
-  pivot_longer(cols = starts_with("S"), names_to = "variable", values_to = "value") %>% 
-  mutate(vari = case_when(
-    variable == "S1_School closing" ~ "Sch",
-    variable == "S2_Workplace closing" ~ "Wrk",
-    variable == "S3_Cancel public events" ~ "PEv",
-    variable == "S4_Close public transport" ~ "PTran",
-    variable == "S5_Public information campaigns" ~ "PInfo",
-    variable == "S6_Restrictions on internal movement" ~ "IMov",
-    variable == "S7_International travel controls" ~ "ITrav",
-    variable == "S8_Fiscal measures" ~ "Fisc$",
-    variable == "S9_Monetary measures" ~ "M$",
-    variable == "S10_Emergency investment in health care" ~ "HCInv",
-    variable == "S11_Investment in Vaccines" ~ "VacInv"),
-    Date = ymd(Date)) %>% 
-  rename("Country" = "CountryName") %>% 
-  mutate(value = ifelse(vari == "Fisc$", si_vec(value), value))
 
+
+oxford_dt <- fread("data/oxford_clean.csv") %>% 
+  mutate(Date = ymd(Date))
 
 
 radar_dt <- wb_dt %>%
