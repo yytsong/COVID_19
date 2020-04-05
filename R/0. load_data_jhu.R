@@ -71,21 +71,21 @@ region_pop <- dt %>%
 ### region continent country
 
 
-region_country_list <- dt %>% 
-  distinct(Continent, Region, country_region) %>% 
-  mutate(Continent = fct_relevel(Continent, "Oceania", after = Inf)) %>% 
-  arrange(Continent,Region, country_region) %>% 
+region_country_list <- dt %>%
+  distinct(Continent, Region, country_region) %>%
+  mutate(Continent = fct_relevel(Continent, "Oceania", after = Inf)) %>%
+  arrange(Continent,Region, country_region) %>%
   mutate(Continent = as.character(Continent))
-
-
-rc_list <- region_country_list %>% 
-  distinct(Continent, Region) %>% 
-  group_by(Continent) %>% 
-  mutate(Region = list(Region)) %>% 
-  distinct()
-
-
-rc_dictionary <- setNames(rc_list$Region, rc_list$Continent)
+# 
+# 
+# rc_list <- region_country_list[,c("Continent", "Region")] %>% 
+#   distinct(Region, .keep_all = TRUE) %>% 
+#   group_by(Continent) %>% 
+#   mutate(Region = list(Region)) %>% 
+#   distinct()
+# 
+# 
+# rc_dictionary <- setNames(rc_list$Region, rc_list$Continent)
 
 
 causes <- wb_dt <- fread("data/annual-number-of-deaths-by-cause.csv") %>%
@@ -105,7 +105,8 @@ wb_dt <- fread("data/wb_data_2020-04-02.csv") %>%
   mutate(first_day = min(Date), days = Date - first_day + 1) %>% 
   ungroup() %>% 
   mutate(active_cases = confirmed_cases - death_cases - recovered_cases) %>% 
-  mutate_if(is.logical, as.numeric) %>% left_join(causes, by = c("Country" = "country_region"))
+  mutate_if(is.logical, as.numeric) %>% 
+  left_join(causes, by = c("Country" = "country_region"))
 
 # wb_dt %>% write_csv(str_c("other/behrooz_wb_dt_", Sys.Date(),".csv"))  
 

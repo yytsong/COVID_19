@@ -687,7 +687,7 @@ server <- function(input, output, session) {
                           selected = c("US", "Italy"))  
         
           
-      }else if(input$region0 > 0){
+      }else if(length(input$region0) > 0){
       
         country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
         
@@ -734,6 +734,11 @@ server <- function(input, output, session) {
     
   })
   
+
+  
+  
+  
+  
   tabinfo <- reactive({
     req(input$tab)
     if (input$tab == "World - Day Zero"){
@@ -774,7 +779,7 @@ server <- function(input, output, session) {
                         selected = c("US", "Italy"))  
       
       
-    }else if(input$region > 0){
+    }else if(length(input$region) > 0){
       
       country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
       
@@ -838,7 +843,7 @@ server <- function(input, output, session) {
                           selected = c("US", "Italy"))  
         
         
-      }else if(input$region2 > 0){
+      }else if(length(input$region2) > 0){
         
         country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
         
@@ -904,7 +909,7 @@ server <- function(input, output, session) {
                           selected = c("US","Italy"))  
         
         
-      }else if(input$region3 > 0){
+      }else if(length(input$region3) > 0){
         
         country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
         
@@ -960,7 +965,7 @@ server <- function(input, output, session) {
                           selected = c("Italy", "US"))  
         
         
-      }else if(input$region7 > 0){
+      }else if(length(input$region7) > 0){
         
         country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
         
@@ -1049,31 +1054,38 @@ server <- function(input, output, session) {
     
     ########## State HERE -------------
     
+
+    
     pass_day_dt_sp <- reactive({
-      req(input$detail_country, input$aspect4, input$detail_state, input$min_case4)
-      
-      filtered_state_data(s = input$detail_state, a = input$aspect4, g = input$detail_country, min_case = input$min_case4)
-      
+      req(input$detail_country, input$aspect4, input$detail_state, input$min_case4, 
+          input$measure4,tabinfo())
+
+      filtered_state_data(s = input$detail_state, m = input$aspect4, c = input$detail_country, min_case = input$min_case4)
+  
     })
     
     output$plt_pass_day_sp <- renderPlot({
-      req(#input$level, 
-        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4, 
-        input$detail_country,input$detail_state)
+      req(pass_day_dt_sp(),input$detail_country,input$detail_state,
+        input$measure4,  input$aspect4, tabinfo(),input$min_case4)
       # ggplotly(
-      plot_day_passed_day(df = pass_day_dt_sp(), m = input$measure4, a = input$aspect4, g = tabinfo(), min_case = input$min_case4
-      )#, tooltip = "text") %>%
-      #    config(displayModeBar = TRUE) 
+
+        plot_day_passed_day(df = pass_day_dt_sp(), m = input$measure4, a = input$aspect4, g = tabinfo(), min_case = input$min_case4
+        )#, tooltip = "text") %>%
+        #    config(displayModeBar = TRUE) 
+    
+    
     })
     
     output$plt_per_capita_sp <- renderPlot({
-      req(#input$level, 
-        input$measure4, pass_day_dt_sp(), input$aspect4, tabinfo(),input$min_case4, 
+      req(pass_day_dt_sp(), 
+        input$measure4, input$aspect4, tabinfo(),input$min_case4, 
         input$detail_country,input$detail_state)
+
       # ggplotly(
       plot_per_capita(df = pass_day_dt_sp(), m = input$measure4,  a = input$aspect4, g = tabinfo(), min_case = input$min_case4
       )#, tooltip = "text") %>%
       #    config(displayModeBar = TRUE) 
+      
     })
     
   

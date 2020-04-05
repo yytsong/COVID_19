@@ -188,7 +188,7 @@ oxford_dt <- read_excel("data/OxCGRT_Download_latest_data.xlsx") %>%
   write_csv("data/oxford_clean.csv")
 
 
-
+#### interesting posts http://nrg.cs.ucl.ac.uk/mjh/covid19/
 
 
 

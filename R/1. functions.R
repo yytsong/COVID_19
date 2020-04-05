@@ -491,7 +491,7 @@ plot_perc_rec <- function(c, r, min_case){
 
 ############# render data for province_state
 
-filtered_state_data <- function(s, a, g, min_case){
+filtered_state_data <- function(s, m, c, min_case){
   
 ## s <- c("Alaska","Arizona","Arkansas","California")
 ## s <- c("Victoria", "Queensland")
@@ -499,9 +499,9 @@ filtered_state_data <- function(s, a, g, min_case){
 
 #  s <- c("Beijing", "Victoria")
   
-  if(identical(a, "Confirmed Cases")){
+  if(identical(m, "Confirmed Cases")){
     aspect <- sym("confirmed_cases")
-  }else if(identical(a, "Death Cases")){
+  }else if(identical(m, "Death Cases")){
     aspect <- sym("death_cases")
   }else{
     aspect <- sym("recovered_cases")
@@ -511,14 +511,14 @@ filtered_state_data <- function(s, a, g, min_case){
   # df <- 
   detailed_country_dt %>% 
     rename("cumulative_cases" = aspect) %>% 
-    filter(country_region %in% g, state %in% s, cumulative_cases >= min_case) %>% 
+    filter(country_region %in% c, state %in% s, cumulative_cases >= min_case) %>% 
     group_by(state, Date, population) %>% 
     summarize(cumulative_cases = sum(cumulative_cases)) %>% 
     ungroup() %>% 
     group_by(state) %>% 
     mutate(first_day = min(Date)) %>% 
-    pivot_wider(names_from = "Date", values_from = "cumulative_cases") %>% 
-    pivot_longer(cols = starts_with("2020-"), names_to = "Date", values_to = "cumulative_cases") %>% 
+  #  pivot_wider(names_from = "Date", values_from = "cumulative_cases") %>% 
+  #  pivot_longer(cols = starts_with("2020-"), names_to = "Date", values_to = "cumulative_cases") %>% 
     arrange(state,Date) %>% 
     mutate(Date = as.Date(Date), passed_days = Date - first_day, 
            incident_cases = ifelse(is.na(lag(cumulative_cases)), cumulative_cases , cumulative_cases - lag(cumulative_cases))) %>% 
