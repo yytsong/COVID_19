@@ -88,10 +88,15 @@ rc_list <- region_country_list %>%
 rc_dictionary <- setNames(rc_list$Region, rc_list$Continent)
 
 
+causes <- wb_dt <- fread("data/annual-number-of-deaths-by-cause.csv") %>%
+  group_by(Entity) %>%
+  filter (Year == max (Year)) %>%
+  mutate (country_region = Entity)
+
 
 dt_country <- dt %>% 
   group_by(Continent, country_region, Date) %>% 
-  summarise_at(vars(confirmed_cases, death_cases, recovered_cases), ~ sum(., na.rm = TRUE))
+  summarise_at(vars(confirmed_cases, death_cases, recovered_cases), ~ sum(., na.rm = TRUE)) 
 
 wb_dt <- fread("data/wb_data_2020-04-02.csv") %>% 
   right_join(dt_country, by = c("Country" = "country_region"))  %>% 
@@ -100,7 +105,7 @@ wb_dt <- fread("data/wb_data_2020-04-02.csv") %>%
   mutate(first_day = min(Date), days = Date - first_day + 1) %>% 
   ungroup() %>% 
   mutate(active_cases = confirmed_cases - death_cases - recovered_cases) %>% 
-  mutate_if(is.logical, as.numeric)
+  mutate_if(is.logical, as.numeric) %>% left_join(causes, by = c("Country" = "country_region"))
 
 # wb_dt %>% write_csv(str_c("other/behrooz_wb_dt_", Sys.Date(),".csv"))  
 

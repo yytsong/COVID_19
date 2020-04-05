@@ -725,24 +725,24 @@ plot_cp_day <- function(c, a){
 plot_death_con <- function(c){
   
  df1 <-  wb_dt %>% 
-   rename("COVID19 Death" = "death_cases") %>% 
+   rename("COVID19 (n deaths)" = "death_cases") %>% 
     filter(Country %in% c, Date == max(Date)) %>% 
-    select(Country, `Alpha-3 code`, population, contains("deaths"), Date, `COVID19 Death`) %>%
-    pivot_longer(cols = contains("death"), names_to = "Death Condition", values_to = "Value") %>% 
+    select(Country, `Alpha-3 code`, population, contains("n deaths"), Date, `COVID19 (n deaths)`) %>%
+    pivot_longer(cols = contains("n deaths"), names_to = "Death Condition", values_to = "Value") %>% 
    mutate(value = si_vec(round(Value,0)),
             #format(as.integer(Value), big.mark = ","), 
-          `Death Condition` = str_remove(`Death Condition`, pattern = " \\(deaths\\)")) 
+          `Death Condition` = str_remove(`Death Condition`, pattern = " \\(n deaths\\)")) 
  
- rbind(df1 %>% filter(`Death Condition` == "COVID19 Death"),
-       df1 %>% group_by(Country) %>% top_n(n = 10, wt = Value) %>% ungroup()) %>% 
+ rbind(df1 %>% filter(`Death Condition` == "COVID19"),
+       df1 %>% group_by(Country) %>% top_n(n = 12, wt = Value) %>% ungroup()) %>% 
    distinct() %>% 
    arrange(Country, desc(Value)) %>% 
    group_by(Country) %>% 
    ggplot(aes(x = fct_reorder(`Death Condition`, Value), y = Value, group = Country,
-              fill = factor(ifelse(`Death Condition` == "COVID19 Death", "focused", "other"))))+
+              fill = factor(ifelse(`Death Condition` == "COVID19", "focused", "other"))))+
    geom_col(color = "white", alpha = 0.7) +
    geom_text(aes(label =value, y = 10,
-                 color = factor(ifelse(`Death Condition` == "COVID19 Death", "focused", "other"))),
+                 color = factor(ifelse(`Death Condition` == "COVID19", "focused", "other"))),
             hjust = 0
              )+
    scale_y_continuous(labels = si_vec) +
@@ -750,8 +750,8 @@ plot_death_con <- function(c){
    scale_color_manual(name = "Focus", values = c("firebrick4", "black"))+
    facet_wrap(~Country, ncol = 2, scales = "free_x")+
    labs(x = "", y = "", #str_c("Number of Weekly Death"),
-        title = str_c ("Top 10 Causes of Death and COVID-19 Death Cases" ," @ ", latest_date, " AEDT"),
-        caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Oxford University"))+
+        title = str_c ("Top Causes of Death and COVID-19 Death Cases" ," @ ", latest_date, " AEDT"),
+        caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Our World in Data"))+
    theme(legend.position = "none",
         # axis.text.x = element_text(angle = 90),
          axis.text = element_text(size = 11),

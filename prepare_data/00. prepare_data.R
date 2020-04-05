@@ -69,7 +69,7 @@ dt_death <- read_csv(jhu_url_deaths) %>%
            TRUE ~ country_region
          )) %>% 
   arrange(country_region, province_state, as.character(Date)) %>% 
-  as.data.table() %>% write_csv("prepare_data/death.csv")
+  as.data.table() #%>% write_csv("prepare_data/death.csv")
 
 dt_recovered <- read_csv(jhu_url_recovered) %>% 
   rename(province_state = "Province/State", country_region = "Country/Region") %>% 
@@ -92,7 +92,7 @@ dt_recovered <- read_csv(jhu_url_recovered) %>%
            TRUE ~ country_region
          )) %>% 
   arrange(country_region, province_state, as.character(Date)) %>% 
-  as.data.table() %>% write_csv("prepare_data/recovered.csv")
+  as.data.table() #%>% write_csv("prepare_data/recovered.csv")
 
 
 dt <- read_csv(jhu_url_confirmed) %>%
@@ -116,12 +116,14 @@ dt <- read_csv(jhu_url_confirmed) %>%
            country_region == "China" ~ "China",
            TRUE ~ country_region
          )) %>%
-  arrange(country_region, province_state, as.character(Date)) %>%
+  arrange(country_region, province_state, Date) %>%
   left_join(pop, by =c("country_region" = "Country")) %>%
   filter(!is.na(Population)) %>%
   as.data.table() %>% 
   left_join(dt_death,by = c("province_state", "country_region", "Lat", "Long", "Date")) %>% 
-  left_join(dt_recovered,by = c("province_state", "country_region", "Lat", "Long", "Date")) %>% write_csv("data/dt.csv")
+  left_join(dt_recovered,by = c("province_state", "country_region", "Lat", "Long", "Date")) %>% 
+  mutate(Date = as.Date(Date)) %>% 
+  write_csv("data/dt.csv")
 
 ### this is original us_dt from JHU
 us_pop <- fread("prepare_data/us_pop.csv") %>% select(state, population)
