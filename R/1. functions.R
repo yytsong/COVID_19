@@ -1,4 +1,4 @@
-# prepare data
+# test functions
 
 # c <- c("Italy", "China")
 # #c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
@@ -16,57 +16,9 @@
 # ya <-  "Per Capita (10 Million)"
 # r <- "Recovery Percentage"
 # min_case <- 100
-# l_dt <- "acaps"
+# l_dt <- "ACAPS Organization"
+# policy_cat <- acaps_dt$category_final %>% unique()
 
-
-# # fomratting functions for scales
-# si_num <- function (x) {
-#   
-#   if (!is.na(x)) {
-#     
-#     if (x < 0){ 
-#       sign <-  "-"
-#       x <- abs(x)
-#     }else{
-#       sign <-  ""
-#       x <- x
-#     }
-#     
-#     
-#     if (x >= 1e9) { 
-#       chrs <- strsplit(format(x, scientific=12), split="")[[1]];
-#       len <- chrs[seq(1,length(chrs)-9)] %>% length();
-#       rem <- chrs[seq(1,length(chrs)-8)];
-#       rem <- append(rem, ".", after = len) %>% append("B");
-#     }
-#     
-#     
-#     else if (x >= 1e6) { 
-#       chrs <- strsplit(format(x, scientific=12), split="")[[1]];
-#       len <- chrs[seq(1,length(chrs)-6)] %>% length();
-#       rem <- chrs[seq(1,length(chrs)-5)]
-#       rem <- append(rem, ".", after = len) %>% append("M");
-#     }
-#     
-#     else if (x >= 1e3) { 
-#       chrs <- strsplit(format(x, scientific=12), split="")[[1]];
-#       len <- chrs[seq(1,length(chrs)-3)] %>% length();
-#       rem <- chrs[seq(1,length(chrs)-2)];
-#       rem <- append(rem, ".", after = len) %>% append("K");
-#     }
-#     
-#     else {
-#       return(x);
-#     }
-#     
-#     return(str_c(sign, paste(rem, sep="", collapse=""), sep = ""));
-#   }
-#   else return(NA);
-# } 
-# 
-# si_vec <- function(x) {
-#   sapply(x, FUN=si_num);
-# }
 
 
 ############# World HERE
@@ -345,9 +297,6 @@ lm_eqn <- function(df){
  # as.character(as.expression(eq));
 }
 
-#p1 <- p + geom_text(x = 25, y = 300, label = lm_eqn(df), parse = TRUE)
-
-
 
 plot_new_cases_growth <- function(df,a, min_case){
   
@@ -382,17 +331,6 @@ plot_new_cases_growth <- function(df,a, min_case){
           y = "Number of Reported Cases Next Day Per 10 Million Population - Log Scale")
   
 }
-
-# lm_df <- df_new %>% filter(next_day > 0)
-
-# fit <- lm(log10(lm_df$next_day) ~ log10(lm_df$per_capita))
-# fit <- lm(df_new$next_day ~ df_new$per_capita)
-
-# test <- data.frame(x = seq(from = 20, to = 50, by = 2)) %>% 
-#   mutate(y = lag(x)*0.1) %>% 
-#   filter(!is.na(y))
-# fit <- lm(test$y ~ test$x)
-# fit <- lm(log10(test$y) ~ log10(test$x))
 
 plot_new_case_growth_facet <- function(df,a, min_case){
   
@@ -489,7 +427,6 @@ plot_perc_rec <- function(c, r, min_case){
 }
 
 
-
 ############# render data for province_state
 
 filtered_state_data <- function(s, m, c, min_case){
@@ -528,8 +465,6 @@ filtered_state_data <- function(s, m, c, min_case){
   
   
 }
-
-
 
 
 # find max cumulative_cases for top countries
@@ -666,7 +601,7 @@ plot_death_crude <- function(c, m){
 
 ### country profile
 
-plot_cp_day <- function(c, a, l_dt){
+plot_cp_day <- function(c, a, l_dt, policy_cat){
   
   if(identical(a, "Confirmed Cases")){
     aspect <- sym("confirmed_cases")
@@ -681,8 +616,7 @@ plot_cp_day <- function(c, a, l_dt){
     filter(Country %in% c, confirmed_cases> 9) 
   
   df <- wb_dt %>% 
-    filter(Country %in% c, Date >= min(earliest_date$Date), confirmed_cases > 9
-           ) %>% 
+    filter(Country %in% c, Date >= min(earliest_date$Date), confirmed_cases > 9) %>% 
     select(Country, `Alpha-3 code`, Date, confirmed_cases:active_cases) %>% 
     rename("cumulative_cases" = aspect) %>% 
     group_by(Country) %>% 
@@ -691,10 +625,11 @@ plot_cp_day <- function(c, a, l_dt){
     select(Country, `Alpha-3 code`, Date, incident_cases)
   
 
-  if(l_dt == "oxford"){
-  label_dt <- oxford_dt %>% 
+  if(l_dt == "Oxford University"){
+  
+    label_dt <- oxford_dt %>% 
     filter(CountryCode %in% unique(df$`Alpha-3 code`), !is.na(vari),
-           !is.na(value), value >0) %>% 
+           !is.na(value), value >0, variable %in% policy_cat) %>% 
     group_by(Country, CountryCode, vari, value) %>% 
     slice(1) %>% 
     mutate(text = str_c(vari, " ", value)) %>% 
@@ -704,12 +639,12 @@ plot_cp_day <- function(c, a, l_dt){
     ungroup() %>% 
     right_join(df, by = c("CountryCode" = "Alpha-3 code", "Date"))
   
-  title_cap <- "Oxford University"
-  
-  }else{
+
+  }else if(l_dt == "ACAPS Organization"){
       
       label_dt <- acaps_dt %>% 
         select(-country) %>% 
+        filter(category_final %in% policy_cat) %>% 
         mutate(date_implemented = as.Date(date_implemented)) %>% 
         group_by(iso3c, date_implemented) %>% 
         summarise(text = paste(sort(unique(code)), collapse = "\n")) %>% 
@@ -717,8 +652,6 @@ plot_cp_day <- function(c, a, l_dt){
         right_join(df, by = c("iso3c" = "Alpha-3 code", "date_implemented" = "Date")) %>% 
         rename("Date" = "date_implemented")
       
-      
-      title_cap <- "ACAPS Organization"
       
     }
   
@@ -732,7 +665,7 @@ plot_cp_day <- function(c, a, l_dt){
     facet_wrap(~Country, ncol = 1, scales = "free_y")+
     labs(x = "", y = str_c("Number of Daily ", a),
          title = str_c("COVID-19 Daily ", a, " @ ", latest_date, " AEDT"),
-         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & ", title_cap))+
+         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & ", l_dt))+
     theme(legend.position = "none",
           axis.text = element_text(size = 11),
           axis.title = element_text(size = 12),
@@ -741,7 +674,7 @@ plot_cp_day <- function(c, a, l_dt){
 
 }
 
-acaps_policy_dt <- function(c, a = "Confirmed Cases"){
+policy_datatable_dt <- function(c, a = "Confirmed Cases", l_dt, policy_cat){
   if(identical(a, "Confirmed Cases")){
     aspect <- sym("confirmed_cases")
   }else if(identical(a, "Death Cases")){
@@ -763,19 +696,35 @@ acaps_policy_dt <- function(c, a = "Confirmed Cases"){
     mutate(incident_cases = ifelse(is.na(lag(cumulative_cases)), cumulative_cases , cumulative_cases - lag(cumulative_cases))) %>% 
     ungroup() %>% 
     select(Country, `Alpha-3 code`, Date, incident_cases)
-    
-  label_dt <- acaps_dt %>% 
+  
+  if(l_dt == "ACAPS Organization"){
+    label_dt <- acaps_dt %>% 
       mutate(date_implemented = as.Date(date_implemented)) %>% 
       rename("Date" = "date_implemented") %>% 
       filter(iso3c %in%  unique(df$`Alpha-3 code`), Date >= min(df$Date), Date <= max(df$Date)) %>% 
       arrange(country, Date, code) %>% 
-    select(country, Date, category_final, code, measure_final, comments, source, source_type, link)
+      select(country, Date, category_final, code, measure_final, comments, source, source_type, link)
     
+    
+  }else if(l_dt == "Oxford University"){
+    label_dt <- oxford_dt %>% 
+      filter(CountryCode %in% unique(df$`Alpha-3 code`), !is.na(vari),
+             !is.na(value), value >0, variable %in% policy_cat) %>% 
+      group_by(Country, CountryCode, vari, value) %>% 
+      slice(1) %>% 
+      ungroup() %>% 
+      select(Country, Date, vari, variable, value)
+
+  }
+    
+
   label_dt
 
 
 }
 
+
+### moved to healthcare system
 
 plot_death_con <- function(c){
   

@@ -436,7 +436,7 @@ ui <- navbarPage("COVID-19 Application",
 
                  column(6,
                         strong("Description"),
-                        "This page consolidates world bank data with COVID-19 cases, we mainly focus on indicators that would help us better understand the capacity of the healthcare system and how much it is stressed.", br(), 
+                        "This page consolidates world bank data with COVID-19 cases, we mainly focus on indicators that would help us better understand the capacity of the healthcare system and how much it is stressed. This page also provides you with data on the position of COVID-19 as a cause of death against the top 10 causes of death in each country.", br(), 
                         strong("Formula"), "Active Cases = Confirmed Cases - (Death Cases + Recovered Cases)"),
                  column(6,
                         strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
@@ -493,7 +493,7 @@ ui <- navbarPage("COVID-19 Application",
       
       
       
-      ####### this is a start of a page "country profile" ----------------
+      ####### this is a start of a page "policy and profile" ----------------
       
       tabPanel("World - Policy and Profile",
                
@@ -501,12 +501,13 @@ ui <- navbarPage("COVID-19 Application",
                  
                  column(6,
                         strong("Description"),
-                        "This page provides data on the policy responses of each country mapped against the number of cases and deaths. You can also compare countries in terms of their level of preparedness to the pandemic, using a set of indicators normalised across all countries. This page also provides you with data on the position of COVID-19 as a cause of death against the top 10 causes of death in each country.", br()),
+                        "This page provides data on the policy responses of each country mapped against the number of cases and deaths. You can also compare countries in terms of their level of preparedness to the pandemic, using a set of indicators normalised across all countries.", br()),
                  column(6,
                         strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
                         "The data is sourced from ",
-                        a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank")," and ",
-                        a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".", br(),
+                        a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),", ",
+                        a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),", and ", 
+                        a(href = "https://www.acaps.org/covid19-government-measures-dataset", "ACAPS Organization", target = "_blank"),".",br(),
                         
                         
                         strong("Feedback"),
@@ -526,25 +527,27 @@ ui <- navbarPage("COVID-19 Application",
                                     selected = "Italy",
                                     options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                    liveSearchStyle = 'contains'),
-                                    multiple = TRUE))
+                                    multiple = TRUE)),
+                 column(2, 
+                        pickerInput(inputId = "policy_data",
+                                    label = "Policy Dataset",
+                                    choices = c("ACAPS Organization","Oxford University"),
+                                    selected = "ACAPS Organization",
+                                    options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                   liveSearchStyle = 'contains'),
+                                    multiple = FALSE)),
+                 
+                 column(2, uiOutput("policy_category"))
                  
                ),br(),
                
-               
                fluidRow(
-                column(6,plotOutput("plt_cp_confirmed_acaps", height = "500px")),
-                column(6,plotOutput("plt_cp_death_acaps", height = "500px"))
-                 ),
+                 
+                column(6,plotOutput("plt_cp_confirmed", height = "500px")),
+                column(6,plotOutput("plt_cp_death", height = "500px"))
+                 ),br(),
                fluidRow(
-                 column(12, dataTableOutput("cp_acaps_dt") )
-               ),
-               br(),
-               fluidRow(
-                 column(2,tableOutput("oxford_info"),
-                        useShinyjs(),
-                        inlineCSS(list("table" = "font-size:10px"))),
-                 column(5,plotOutput("plt_cp_confirmed_ox", height = "500px")),
-                 column(5,plotOutput("plt_cp_death_ox", height = "500px"))
+                 column(12, dataTableOutput("policy_datatable"), style = "font-size: 75%; width: 100%")
                )
       ),
       
@@ -1039,43 +1042,54 @@ server <- function(input, output, session) {
     
 
     
-    ### country profile page ---------
+    ### policy and profile HERE ---------
     
-    
-    output$plt_cp_confirmed_acaps <- renderPlot({
-      req(input$country8)
+    output$policy_category <- renderUI({
+      req(input$policy_data)
+
+      if(input$policy_data == "ACAPS Organization"){
+        
+        plc_choice <- acaps_dt$category_final %>% unique() 
+        
+      }else{
+        plc_choice <- oxford_dt$variable %>% unique()
+      }
       
-      plot_cp_day(c = input$country8, a = "Confirmed Cases", l_dt = "acaps")
+      pickerInput(inputId = "policy_category",
+                  label = "Policy Category",
+                  choices = plc_choice,
+                  selected = plc_choice,
+                  options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                 liveSearchStyle = 'contains'),
+                  multiple = TRUE)
     })
     
-    output$plt_cp_death_acaps <- renderPlot({
-      req(input$country8)
+    
+    output$plt_cp_confirmed <- renderPlot({
+      req(input$country8,input$policy_data,input$policy_category)
       
-      plot_cp_day(c = input$country8, a = "Death Cases", l_dt ="acaps")
+      plot_cp_day(c = input$country8, a = "Confirmed Cases", l_dt = input$policy_data, policy_cat = input$policy_category)
     })
     
-    output$cp_acaps_dt <- renderDataTable({
-      req(input$country8)
-      acaps_policy_dt(c = input$country8, a = "Confirmed Cases")
+    output$plt_cp_death <- renderPlot({
+      req(input$country8,input$policy_data,input$policy_category)
       
+      plot_cp_day(c = input$country8, a = "Death Cases", l_dt = input$policy_data, policy_cat = input$policy_category)
     })
     
+    output$policy_datatable <- DT::renderDataTable({
+      req(input$country8,input$policy_data,input$policy_category)
+      policy_datatable_dt(c = input$country8, a = "Confirmed Cases",l_dt = input$policy_data, policy_cat = input$policy_category) 
+    },
+    options = list(lengthMenu=c(5,10,25,50,100),
+                   pageLength=5,
+                   searchHighlight=TRUE,
+                   autoWidth=FALSE#,
+                  # columnDefs=list(list(width="100px",targets="_all"))
+                   )
+    )
     
-    output$oxford_info <- renderTable({
-      oxford_dt %>% distinct(variable, vari) %>% rename("Policy" = "variable", "Abbreviation" ="vari")
-    })
     
-    output$plt_cp_confirmed_ox <- renderPlot({
-      req(input$country8)
-      
-      plot_cp_day(c = input$country8, a = "Confirmed Cases", l_dt = "oxford")
-    })
-    
-    output$plt_cp_death_ox <- renderPlot({
-      req(input$country8)
-      
-      plot_cp_day(c = input$country8, a = "Death Cases", l_dt ="oxford")
-    })
 
     
     ########## State HERE -------------
