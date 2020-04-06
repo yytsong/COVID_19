@@ -16,6 +16,7 @@
 # ya <-  "Per Capita (10 Million)"
 # r <- "Recovery Percentage"
 # min_case <- 100
+# l_dt <- "acaps"
 
 
 # # fomratting functions for scales
@@ -180,7 +181,7 @@ plot_world_lvl <- function(lvl){
     scale_y_log10(labels = si_vec) +
     scale_x_continuous()+
     theme(legend.position = "none")+
-    labs(x = "Days since the First Case Reported from each Country", 
+    labs(x = "Days since the First Case Reported from each Continent", 
          y = str_c("Confirmed Cases Per Capita (10M)"),
          title = str_c ("COVID-19 Cases Per Capita (10M) by ", lvl, " @ ", latest_date," AEDT", "\n","(Y-axis is logged)"),
          caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"))
@@ -665,7 +666,7 @@ plot_death_crude <- function(c, m){
 
 ### country profile
 
-plot_cp_day <- function(c, a){
+plot_cp_day <- function(c, a, l_dt){
   
   if(identical(a, "Confirmed Cases")){
     aspect <- sym("confirmed_cases")
@@ -690,7 +691,7 @@ plot_cp_day <- function(c, a){
     select(Country, `Alpha-3 code`, Date, incident_cases)
   
 
-  
+  if(l_dt == "oxford"){
   label_dt <- oxford_dt %>% 
     filter(CountryCode %in% unique(df$`Alpha-3 code`), !is.na(vari),
            !is.na(value), value >0) %>% 
@@ -703,17 +704,35 @@ plot_cp_day <- function(c, a){
     ungroup() %>% 
     right_join(df, by = c("CountryCode" = "Alpha-3 code", "Date"))
   
+  title_cap <- "Oxford University"
+  
+  }else{
+      
+      label_dt <- acaps_dt %>% 
+        select(-country) %>% 
+        mutate(date_implemented = as.Date(date_implemented)) %>% 
+        group_by(iso3c, date_implemented) %>% 
+        summarise(text = paste(sort(unique(code)), collapse = "\n")) %>% 
+        ungroup() %>% 
+        right_join(df, by = c("iso3c" = "Alpha-3 code", "date_implemented" = "Date")) %>% 
+        rename("Date" = "date_implemented")
+      
+      
+      title_cap <- "ACAPS Organization"
+      
+    }
+  
   label_dt %>% 
     ggplot(aes(x = Date, y = incident_cases, group = Country, label = text))+
     geom_col(fill = "grey60", color = "white", alpha = 0.7)+
-    geom_text_repel(min.segment.length = 0, size = 4,
+    geom_text_repel(min.segment.length = 0, size = 3,
                    force = 1, #point.padding = unit(1, 'lines'),
                    vjust = 1, direction = 'y', nudge_y =  1)+
     scale_y_continuous(labels = si_vec) +
     facet_wrap(~Country, ncol = 1, scales = "free_y")+
     labs(x = "", y = str_c("Number of Daily ", a),
          title = str_c("COVID-19 Daily ", a, " @ ", latest_date, " AEDT"),
-         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Oxford University"))+
+         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & ", title_cap))+
     theme(legend.position = "none",
           axis.text = element_text(size = 11),
           axis.title = element_text(size = 12),
@@ -721,6 +740,42 @@ plot_cp_day <- function(c, a){
   
 
 }
+
+acaps_policy_dt <- function(c, a = "Confirmed Cases"){
+  if(identical(a, "Confirmed Cases")){
+    aspect <- sym("confirmed_cases")
+  }else if(identical(a, "Death Cases")){
+    aspect <- sym("death_cases")
+  }else{
+    aspect <- sym("recovered_cases")
+  }
+  
+  
+  earliest_date <- wb_dt %>% 
+    filter(Country %in% c, confirmed_cases> 9) 
+  
+  df <- wb_dt %>% 
+    filter(Country %in% c, Date >= min(earliest_date$Date), confirmed_cases > 9
+    ) %>% 
+    select(Country, `Alpha-3 code`, Date, confirmed_cases:active_cases) %>% 
+    rename("cumulative_cases" = aspect) %>% 
+    group_by(Country) %>% 
+    mutate(incident_cases = ifelse(is.na(lag(cumulative_cases)), cumulative_cases , cumulative_cases - lag(cumulative_cases))) %>% 
+    ungroup() %>% 
+    select(Country, `Alpha-3 code`, Date, incident_cases)
+    
+  label_dt <- acaps_dt %>% 
+      mutate(date_implemented = as.Date(date_implemented)) %>% 
+      rename("Date" = "date_implemented") %>% 
+      filter(iso3c %in%  unique(df$`Alpha-3 code`), Date >= min(df$Date), Date <= max(df$Date)) %>% 
+      arrange(country, Date, code) %>% 
+    select(country, Date, category_final, code, measure_final, comments, source, source_type, link)
+    
+  label_dt
+
+
+}
+
 
 plot_death_con <- function(c){
   

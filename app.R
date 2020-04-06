@@ -465,6 +465,20 @@ ui <- navbarPage("COVID-19 Application",
                  column(2, uiOutput("country7"))
 
                ),br(),
+               fluidRow(
+                 
+                 
+                 column(4, plotOutput("plt_cp_radar", height = "400px")),
+                 column(3,
+                        strong("Left: "), br(),br(),
+                        "The value indicates the relative position of a selected country against all other countries. When a country has a higher value across each of the measures, it is interpreted as being more ready in facing the pandemic", br(),br(),
+                        "Urban Population, Population Age >= 65, and Vulnerable Employment (Male and Female) scales have been reverted to refelct their readiness.", br(),br(),
+                        strong("Right: "), br(),br(),
+                        "The top 10 causes of death are presented for each country and COVID-19 is added to provide an opportunity for benchmarking."),
+                 
+                 column(5, plotOutput("plt_death_reason", height = "300px"))#,
+                 # column(4, plotOutput("plt_annual_death", height = "300px"))
+               ),
 
 
                fluidRow(
@@ -518,26 +532,20 @@ ui <- navbarPage("COVID-19 Application",
                
                
                fluidRow(
+                column(6,plotOutput("plt_cp_confirmed_acaps", height = "500px")),
+                column(6,plotOutput("plt_cp_death_acaps", height = "500px"))
+                 ),
+               fluidRow(
+                 column(12, dataTableOutput("cp_acaps_dt") )
+               ),
+               br(),
+               fluidRow(
                  column(2,tableOutput("oxford_info"),
                         useShinyjs(),
                         inlineCSS(list("table" = "font-size:10px"))),
-                column(5,plotOutput("plt_cp_confirmed", height = "500px")),
-                column(5,plotOutput("plt_cp_death", height = "500px"))#,
-                 ), br(),br(),
-               fluidRow(
-                
-
-                column(4, plotOutput("plt_cp_radar", height = "400px")),
-                column(3,
-                       strong("Left: "), br(),br(),
-                       "The value indicates the relative position of a selected country against all other countries. When a country has a higher value across each of the measures, it is interpreted as being more ready in facing the pandemic", br(),br(),
-                       "Urban Population, Population Age >= 65, and Vulnerable Employment (Male and Female) scales have been reverted to refelct their readiness.", br(),br(),
-                strong("Right: "), br(),br(),
-                "The top 10 causes of death are presented for each country and COVID-19 is added to provide an opportunity for benchmarking."),
-                
-                 column(5, plotOutput("plt_death_reason", height = "300px"))#,
-                # column(4, plotOutput("plt_annual_death", height = "300px"))
-                 )
+                 column(5,plotOutput("plt_cp_confirmed_ox", height = "500px")),
+                 column(5,plotOutput("plt_cp_death_ox", height = "500px"))
+               )
       ),
       
                 
@@ -734,16 +742,13 @@ server <- function(input, output, session) {
     
   })
   
-
-  
-  
-  
-  
   tabinfo <- reactive({
     req(input$tab)
     if (input$tab == "World - Day Zero"){
       t <- "world"}else if(input$tab == "State/Province - Day Zero"){
-        t <- "other"}
+        t <- "other"}else{
+          t <- NA
+        }
     t
     
   })
@@ -815,7 +820,7 @@ server <- function(input, output, session) {
         #    config(displayModeBar = TRUE) 
     })
     
- ##### world growth ------------
+    ##### world growth ------------
     output$country2 <- renderUI({
       req(input$region2)
       
@@ -937,7 +942,8 @@ server <- function(input, output, session) {
     
     
     
-    #### world bank page -----------
+    #### healthcare system  -----------
+    
     
     
     output$country7 <- renderUI({
@@ -978,6 +984,9 @@ server <- function(input, output, session) {
       
     })
     
+
+    
+    
     output$plt_hospital_bed <- renderPlot({
       req(input$country7, input$region7)
       
@@ -1015,42 +1024,59 @@ server <- function(input, output, session) {
     })
     
     
-
+## additional plot to healthcare system
+    output$plt_death_reason <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_death_con(c = input$country7)
+    })
+    
+    output$plt_cp_radar <- renderPlot({
+      req(input$country7, input$region7)
+      
+      plot_cp_radar(c= input$country7)
+    })
     
 
     
     ### country profile page ---------
     
-    output$plt_cp_confirmed <- renderPlot({
+    
+    output$plt_cp_confirmed_acaps <- renderPlot({
       req(input$country8)
       
-      plot_cp_day(c = input$country8, a = "Confirmed Cases")
+      plot_cp_day(c = input$country8, a = "Confirmed Cases", l_dt = "acaps")
     })
     
-    output$plt_cp_death <- renderPlot({
+    output$plt_cp_death_acaps <- renderPlot({
       req(input$country8)
       
-      plot_cp_day(c = input$country8, a = "Death Cases")
+      plot_cp_day(c = input$country8, a = "Death Cases", l_dt ="acaps")
     })
+    
+    output$cp_acaps_dt <- renderDataTable({
+      req(input$country8)
+      acaps_policy_dt(c = input$country8, a = "Confirmed Cases")
+      
+    })
+    
     
     output$oxford_info <- renderTable({
       oxford_dt %>% distinct(variable, vari) %>% rename("Policy" = "variable", "Abbreviation" ="vari")
     })
     
-    
-    output$plt_death_reason <- renderPlot({
+    output$plt_cp_confirmed_ox <- renderPlot({
       req(input$country8)
       
-      plot_death_con(c = input$country8)
+      plot_cp_day(c = input$country8, a = "Confirmed Cases", l_dt = "oxford")
     })
     
-    
-    
-    output$plt_cp_radar <- renderPlot({
+    output$plt_cp_death_ox <- renderPlot({
       req(input$country8)
       
-      plot_cp_radar(c= input$country8)
+      plot_cp_day(c = input$country8, a = "Death Cases", l_dt ="oxford")
     })
+
     
     ########## State HERE -------------
     
@@ -1088,47 +1114,6 @@ server <- function(input, output, session) {
       
     })
     
-  
-
-    
-
-    
-  # output$plt_map_per_capita <- renderImage({
-  #   
-  #   outfile <- tempfile(fileext='.gif') # temporary file will be removed later by renderImage
-  #   
-  #   plt <- ggplot()+
-  #     borders("world", colour="gray50", fill="gray90") +
-  #     geom_point(data = map_dt, alpha = 0.5, aes(x = Long, y = Lat, size = per_capita,
-  #                                                color = country_region)) +
-  #     scale_color_manual(values = country_color, guide = FALSE) +
-  #     scale_size_continuous(name = "Number of Cases", labels = si_vec)+
-  #     theme(legend.position = "bottom")+
-  #     transition_time(Date) +
-  #     labs(x = "Longitude", y = "Latitude", title = str_c("COVID-19 Cases Per 10 Million of Population Date: {frame_time}") )
-  #   
-  #   anim_save("outfile.gif", animate(plt, nframe = 50, fps = 5, height = 461, width = 644)) 
-  #   
-  #   list(src = "outfile.gif",contentType = 'image/gif')}, deleteFile = TRUE)
-  #   
-  #   
-  # output$plt_map_incident <- renderImage({
-  #   
-  #   outfile <- tempfile(fileext='.gif') # temporary file will be removed later by renderImage
-  #   
-  #   plt <- ggplot()+
-  #     borders("world", colour="gray50", fill="gray90") +
-  #     geom_point(data = map_dt, alpha = 0.5, aes(x = Long, y = Lat, size = per_capita,
-  #                                                color = country_region)) +
-  #     scale_color_manual(values = country_color, guide = FALSE) +
-  #     scale_size_continuous(name = "Number of Cases", labels = si_vec)+
-  #     theme(legend.position = "bottom")+
-  #     transition_time(Date) +
-  #     labs(x = "Longitude", y = "Latitude", title = str_c("COVID-19 Incident Cases Date: {frame_time}") )
-  #   
-  #   anim_save("outfile.gif", animate(plt, nframe = 50, fps = 5, height = 461, width = 644)) 
-  #   
-  #   list(src = "outfile.gif",contentType = 'image/gif')}, deleteFile = TRUE)
   
   
     

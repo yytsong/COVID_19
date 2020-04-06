@@ -204,3 +204,63 @@ detailed_country_dt <- rbind(au_dt, ch_dt, us_dt) %>%
   write_csv("data/detailed_country_dt.csv")
 
 
+# ### source https://www.r-bloggers.com/meet-tidycovid19-yet-another-covid-19-related-r-package/
+# ### connect to https://www.acaps.org/covid19-government-measures-dataset
+library(tidycovid19)
+
+acaps_npi <- download_acaps_npi_data() %>% 
+  mutate(date_implemented = as.Date(date_implemented)) %>% 
+  mutate(date_implemented = as.character(date_implemented)) %>% 
+  select(country, iso3c, category, measure, targeted_pop_group, comments, date_implemented, source, source_type, link) 
+
+
+
+category_npi <- acaps_npi %>%
+  distinct(category, measure) %>%
+  arrange(category, measure) %>%
+  mutate(category_final = case_when(
+    category == "Humanitarian exemption" ~ "HE - Humanitarian exemption",
+    category == "Lockdown" ~ "LD - Lockdown",
+    category == "Movement restrictions" ~ "MR - Movement restrictions",
+    category == "Public health measures" ~ "PH - Public health measures",
+    category == "Social and economic measures" ~ "SE - Social and economic measures",
+    category == "Social distancing" ~ "SD - Social distancing")) %>% 
+  mutate(code = str_sub(category_final, start = 1L, end = 2L)) %>% 
+  group_by(category) %>% 
+  mutate(code = str_c(code, 1:n())) %>% 
+  mutate(measure_final = str_c(code, measure, sep = " - "))
+
+
+
+acaps_npi %>%
+  left_join(category_npi, by = c("category", "measure")) %>% 
+  select(-c(category, measure)) %>% 
+  write_csv("data/acaps_policy.csv")
+
+
+
+
+
+oxford_dt <- read_excel("prepare_data/OxCGRT_Download_latest_data.xlsx") %>% 
+  select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "...35", "Confirmed"))) %>% 
+  pivot_longer(cols = starts_with("S"), names_to = "variable", values_to = "value") %>% 
+  mutate(vari = case_when(
+    variable == "S1_School closing" ~ "Sch",
+    variable == "S2_Workplace closing" ~ "Wrk",
+    variable == "S3_Cancel public events" ~ "PEv",
+    variable == "S4_Close public transport" ~ "PTran",
+    variable == "S5_Public information campaigns" ~ "PInfo",
+    variable == "S6_Restrictions on internal movement" ~ "IMov",
+    variable == "S7_International travel controls" ~ "ITrav",
+    variable == "S8_Fiscal measures" ~ "Fisc",
+    variable == "S9_Monetary measures" ~ "MonM",
+    variable == "S10_Emergency investment in health care" ~ "HCInv",
+    variable == "S11_Investment in Vaccines" ~ "VacInv"),
+    Date = ymd(Date)) %>% 
+  rename("Country" = "CountryName") %>% 
+  mutate(value = ifelse(vari %in% c("Fisc", "MonM", "VacInv", "HCInv"), si_vec(value), value)) %>% 
+  write_csv("data/oxford_clean.csv")
+
+
+#### interesting posts http://nrg.cs.ucl.ac.uk/mjh/covid19/
+

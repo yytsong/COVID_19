@@ -170,6 +170,9 @@ oxford_dt <- fread("data/oxford_clean.csv") %>%
   mutate(Date = ymd(Date))
 
 
+acaps_dt <- fread("data/acaps_policy.csv")
+
+
 radar_dt <- wb_dt %>%
   filter (Date == max(Date, na.rm = TRUE)) %>%
   # distinct (Country, death_cases, pop_age_65,population,confirmed_cases,gdp_capita, income,import_goods, nurse, physicians,

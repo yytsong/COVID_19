@@ -5,9 +5,9 @@ account: behroozh
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1933279
-bundleId: 2970457
+bundleId: 2973367
 url: https://behroozh.shinyapps.io/COVID19/
-when: 1586060812.54949
+when: 1586136324.97574
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: Icon|output/covid19_country_2020-04-01.csv|R/.DS_Store|www/image1.png|www/image2.png|daily data|Other|prepare_data
+ignoredFiles: Icon|ACAPS/20200402_acaps_-_covid-19_goverment_measures_dataset_v4.xlsx|EpiModel Exploration/0. test_library.R|EpiModel Exploration/1. keep_test_library.R|output/covid19_country_2020-04-01.csv|R/.DS_Store|www/image1.png|www/image2.png|daily data|Other|prepare_data
