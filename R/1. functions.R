@@ -19,6 +19,47 @@
 # l_dt <- "ACAPS Organization"
 # policy_cat <- acaps_dt$category_final %>% unique()
 
+#number_ticks <- function(n) {function(limits) pretty(limits, n)}
+
+
+# scales of plots
+
+scale_breaks <- c(0,5,10,25,50,100,250,500,1000,2500,5000, 10000,25000,50000,100000,250000)
+# reverselog_trans <- function(base = exp(1)) { 
+#   trans <- function(x) -log(x, base) 
+#   inv <- function(x) base^(-x) 
+#   scales::trans_new(paste0("reverselog-", format(base)), trans, inv, 
+#                     scales::log_breaks(base = base), domain = c(1e-100, Inf)) 
+# }
+
+
+log_scale_breaks <- c(1,10,100)
+
+# find max cumulative_cases for top countries
+
+
+c25 <- rep (c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", #"gold1",
+  "steelblue", "#FB9A99", # lt pink
+  "yellow4",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray60", #"khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "olivedrab", #"yellow4", "yellow3",
+  "darkorange4", "brown"
+),9)
+
+names(c25) <- country_sorted_by_cases 
+country_color <- c25[1:length(country_sorted_by_cases)]
+
+names(c25) <- c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases) 
+state_color <- c25[1:length(c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases))]
+
 
 
 ############# World HERE
@@ -100,6 +141,27 @@ plot_explore_country <- function(df, xc, xm, xa, yc, ym, ya, min_case){
     scale_x_log10(labels = si_vec, breaks = scale_breaks)
   
 }
+
+# labs = seq(0,100,10)
+# labs[!!((seq_along(labs)-1)%%5)] = ''
+# g = ggplot(data.frame(x = 1:10, y = (1:10)^2), aes(x,y)) +
+#   geom_point() +
+#   scale_y_continuous(breaks = seq(0,100,10), labels = labs) +
+#   theme(axis.ticks.length=unit(10, "pt"))
+# 
+# gg = ggplotGrob(g)
+# yaxis <- gg$grobs[[which(gg$layout$name == "axis-l")]]  
+# ticks <- yaxis$children[[2]]
+# marks = ticks$grobs[[2]]
+# marks$x[c(2:5,7:10)*2-1] = unit(1, "npc") - unit(3, "pt")
+# 
+# # Put the tick marks back into the plot
+# ticks$grobs[[2]] = marks
+# yaxis$children[[2]] = ticks
+# gg$grobs[[which(gg$layout$name == "axis-l")]]  = yaxis
+# grid.draw(gg)
+
+
 
 plot_world_lvl <- function(lvl){
   
@@ -429,7 +491,7 @@ plot_perc_rec <- function(c, r, min_case){
 
 ############# render data for province_state
 
-filtered_state_data <- function(s, m, c, min_case){
+filtered_state_data <- function(s, a, c, min_case){
   
 ## s <- c("Alaska","Arizona","Arkansas","California")
 ## s <- c("Victoria", "Queensland")
@@ -437,9 +499,9 @@ filtered_state_data <- function(s, m, c, min_case){
 
 #  s <- c("Beijing", "Victoria")
   
-  if(identical(m, "Confirmed Cases")){
+  if(identical(a, "Confirmed Cases")){
     aspect <- sym("confirmed_cases")
-  }else if(identical(m, "Death Cases")){
+  }else if(identical(a, "Death Cases")){
     aspect <- sym("death_cases")
   }else{
     aspect <- sym("recovered_cases")
@@ -465,44 +527,6 @@ filtered_state_data <- function(s, m, c, min_case){
   
   
 }
-
-
-# find max cumulative_cases for top countries
-
-
-c25 <- rep (c(
-  "dodgerblue2", "#E31A1C", # red
-  "green4",
-  "#6A3D9A", # purple
-  "#FF7F00", # orange
-  "black", #"gold1",
-  "skyblue2", "#FB9A99", # lt pink
-  "palegreen2",
-  "#CAB2D6", # lt purple
-  "#FDBF6F", # lt orange
-  "gray70", #"khaki2",
-  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
-  "darkturquoise", "green1", #"yellow4", "yellow3",
-  "darkorange4", "brown"
-),9)
-
-names(c25) <- country_sorted_by_cases 
-country_color <- c25[1:length(country_sorted_by_cases)]
-
-names(c25) <- c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases) 
-state_color <- c25[1:length(c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases))]
-
-
-
-# scales of plots
-
-scale_breaks <- c(0,5,10,25,50,100,250,500,1000,2500,5000, 10000,25000,50000,100000,250000)
-# reverselog_trans <- function(base = exp(1)) { 
-#   trans <- function(x) -log(x, base) 
-#   inv <- function(x) base^(-x) 
-#   scales::trans_new(paste0("reverselog-", format(base)), trans, inv, 
-#                     scales::log_breaks(base = base), domain = c(1e-100, Inf)) 
-# }
 
 
 ### world bank plots from here
@@ -658,7 +682,7 @@ plot_cp_day <- function(c, a, l_dt, policy_cat){
   label_dt %>% 
     ggplot(aes(x = Date, y = incident_cases, group = Country, label = text))+
     geom_col(fill = "grey60", color = "white", alpha = 0.7)+
-    geom_text_repel(min.segment.length = 0, size = 3,
+    geom_text_repel(min.segment.length = 0, size = 4,
                    force = 1, #point.padding = unit(1, 'lines'),
                    vjust = 1, direction = 'y', nudge_y =  1)+
     scale_y_continuous(labels = si_vec) +
@@ -798,6 +822,124 @@ if(length(c) == 1){}else{
 
 
 }
+
+
+### functions for plot testing data 
+
+
+plot_test_line <- function(c, x, y){
+  
+  xvar <- sym(x)
+  yvar <- sym(y)
+  
+  
+  df <- dayzero_test %>% 
+    filter(Country %in% c)
+
+  
+  plt <- df%>% 
+    ggplot(aes(x = !!xvar, y = !!yvar, group = Country, color = Country)) +
+    geom_point()+
+    geom_path()+
+    geom_text_repel(data = dayzero_end_test %>% filter(Country %in% c), aes(label = Country), size = 5, min.segment.length = 0, segment.color = "grey80")+
+    scale_color_manual(values = country_color)+
+    theme(legend.position = "none",
+          axis.text = element_text(size = 11),
+          axis.title = element_text(size = 12),
+          title = element_text(size = 13))+
+    scale_y_log10(label = si_vec, breaks = scale_breaks) +
+    labs(caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Our World in Data"))
+  
+
+  
+  if(x == "days"){
+    xlabel <- "Days since First Confirm Case Reported"
+    ylabel <- "Cumulative Tests"
+    
+    plt +   
+      geom_vline(xintercept = 0, color = "tomato3", linetype = "dotted") +
+      scale_x_continuous(breaks = seq(-100,200, 10)) +
+      labs(x = xlabel, y = ylabel,
+           title = str_c ("Cumulative COVID-19 Tests since Day Zero" ," @ ", max(df$Date), " AEDT"))
+  }else if(x == "Date"){
+    xlabel <- "Date"
+    ylabel <- "Cumulative Tests per Thousand"
+    
+    plt +
+      labs(x = xlabel, y = ylabel,
+           title = str_c ("Cumulative COVID-19 Tests per Thousand Population" ," @ ", max(df$Date), " AEDT"))
+    
+  }
+  
+  
+  
+  
+}
+
+plot_test_bar <- function(c, y){
+
+  yvar <- sym(y)
+  
+  df <-   dayzero_test %>% 
+    filter(Country %in% c) %>% 
+    left_join(country_test,  by = c("Country" = "country_region", "Date")) %>% 
+    group_by(Country) %>% 
+    filter(Date == last(Date)) %>% 
+    ungroup() 
+    
+  if(y == "Cumulative total per thousand"){ 
+    df <- df
+    ylabel <- "Cumulative Tests per Thousand Population"
+  }else if (y == "cases_per_test"){
+    df <-   df %>%  mutate(cases_per_test = confirmed_cases / `Cumulative total`) 
+    ylabel <- "Confirmed Cases per Test"
+  }
+  
+  
+ 
+  
+  df %>%
+    ggplot(aes(x = fct_reorder(Country,!!yvar), y = !!yvar, group = Country, fill = Country)) +
+    geom_col() +
+    scale_color_manual(values = country_color)+
+    scale_y_continuous(label = si_vec) +
+    geom_text(aes(label = str_c("As of ", format(Date,"%m-%d"))), y =  max(df[yvar]) *0.1,hjust = 0, size =3)+
+    theme(legend.position = "none",
+          axis.text = element_text(size = 11),
+          axis.title = element_text(size = 12),
+          title = element_text(size = 13))+
+    labs(x = "", y = ylabel, 
+         caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Our World in Data"),
+         title = str_c(ylabel, " at the Latest Avaliable Date"))+
+    coord_flip()
+  
+
+  
+
+  # df %>%
+  #   ggplot(aes(x = fct_reorder(Country,`Cumulative total per thousand`), y = `Cumulative total per thousand`, group = Country, fill = Country)) +
+  #   geom_col() +
+  #   scale_color_manual(values = country_color)+
+  #   scale_y_continuous(label = si_vec) +
+  #   theme(legend.position = "none",
+  #         axis.text = element_text(size = 11),
+  #         axis.title = element_text(size = 12),
+  #         title = element_text(size = 13))+
+  #   coord_flip()+
+  #   labs(x = "", y = "Cumulative Tests per Thousand")
+# 
+#   
+#   
+#   
+# df %>%
+#     ggplot(aes(x = fct_reorder(Country, cases_per_test), y = cases_per_test, group = Country, fill = Country))+
+#     geom_col() +
+#     scale_color_manual(values = country_color)+
+#     scale_y_continuous(label = si_vec) +
+#     theme(legend.position = "none")+
+#     labs(x = "", y = "Confirmed Cases per Test")+
+#     coord_flip()
+} 
 
 
 

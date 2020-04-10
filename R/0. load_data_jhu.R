@@ -169,8 +169,20 @@ si_vec <- function(x) {
 oxford_dt <- fread("data/oxford_clean.csv") %>% 
   mutate(Date = ymd(Date))
 
+oxford_cat_legend <- oxford_dt %>% 
+  distinct(vari,variable) %>% 
+  rename("Code" = "vari", "Policy Type" = "variable") 
+
 
 acaps_dt <- fread("data/acaps_policy.csv")
+
+acaps_cat_legend <- acaps_dt %>% 
+  distinct(category_final,code, measure_final) %>% 
+  rename("Code" = "code", "Policy Type" = "measure_final") %>% 
+  mutate(no = str_extract(Code, pattern = "[0-9]+"),
+         no = as.numeric(no)) %>% 
+  arrange(category_final, no) %>% 
+  select(Code, `Policy Type`)
 
 
 
@@ -213,6 +225,39 @@ radar_dt <- wb_dt %>%
            Plot.title == "v_employment_female" ~ "Vulnerable\nEmployement\nFemale",
            Plot.title == "death_cases_rate" ~ "\nCOVID19\nDeath Rate")) %>% 
   as.data.table()
+
+
+## load testing data in -----
+
+test_dt_init <- fread("data/testing.csv") %>% 
+  mutate(Date = as.Date(Date)) 
+
+country_test <- dt %>% 
+  group_by(country_region, Date, Population) %>% 
+  summarise_at(vars(confirmed_cases, death_cases, recovered_cases), funs(sum)) %>% 
+  ungroup() %>% 
+  filter(country_region %in% unique(test_dt_init$Country)) %>% 
+  select(country_region, Date, confirmed_cases, death_cases, recovered_cases) %>% 
+  filter(confirmed_cases > 0) %>% 
+  group_by(country_region) %>% 
+  mutate(first_day = min(Date)) %>% 
+  ungroup()
+
+dayzero_test <- test_dt_init %>%
+  left_join(country_test %>% distinct(country_region, first_day), by = c("Country" = "country_region")) %>% 
+  mutate(days = as.numeric(Date - first_day)) 
+
+dayzero_end_test <- dayzero_test %>%
+  group_by(Country) %>%
+  filter(days == last(days)) %>%
+  ungroup()
+
+
+ 
+
+
+
+
 
 
 

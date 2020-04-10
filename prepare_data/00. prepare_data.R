@@ -158,7 +158,7 @@ us_dt <- us_county_confirmed %>%
   left_join(us_county_death, by = c("Province_State", "Date")) %>% 
   rename("state"="Province_State") %>% 
   left_join(us_pop, by = "state") %>% 
-  mutate(recovered_cases = NA, country_region = "US")%>% 
+  mutate(recovered_cases = NA, country_region = "US", Date = as.character(Date))%>% 
   select(country_region, state, population, Date, confirmed_cases, death_cases, recovered_cases) %>% 
   arrange(state, Date)
 
@@ -240,7 +240,8 @@ acaps_npi %>%
 
 
 
-
+# https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker
+## updated 31/03/2020 checked on 7th April 2020
 oxford_dt <- read_excel("prepare_data/OxCGRT_Download_latest_data.xlsx") %>% 
   select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "...35", "Confirmed"))) %>% 
   pivot_longer(cols = starts_with("S"), names_to = "variable", values_to = "value") %>% 
@@ -263,4 +264,34 @@ oxford_dt <- read_excel("prepare_data/OxCGRT_Download_latest_data.xlsx") %>%
 
 
 #### interesting posts http://nrg.cs.ucl.ac.uk/mjh/covid19/
+
+### testing data
+## source https://github.com/owid/covid-19-data/tree/master/public/data/testing
+
+testing_url <- "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/testing/covid-testing-all-observations.csv"
+test_dt <- read_csv(testing_url) %>% 
+  # only save "India - Sample tested"
+  filter(Entity != "India - people tested") %>% 
+  separate(col = "Entity", into = c("Country", "Unit"), sep = " - ") %>% 
+  arrange(Country, Date)  %>% 
+  mutate(Country = case_when(
+    Country == "United Kingdom" ~ "UK",
+    Country == "United States" ~ "US",
+    Country == "Czech Republic" ~ "Czechia",
+    TRUE ~ Country)) %>% 
+  group_by(Country, Date) %>% 
+  summarise_at(vars("Cumulative total", "Daily change in cumulative total",
+                    "Cumulative total per thousand", "Daily change in cumulative total per thousand"), sum, na.rm = TRUE) %>% 
+  ungroup() %>% 
+  filter(`Cumulative total` > 0) %>% # remove interrupted testing data 
+  arrange(Country, Date) %>% 
+  write_csv("data/testing.csv")
+
+## check country name consistency 
+# unique(test_dt$Country)[!(unique(test_dt$Country)) %in% unique(dt$country_region)]
+
+
+
+
+
 

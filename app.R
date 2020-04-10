@@ -65,8 +65,10 @@ ui <- navbarPage("COVID-19 Application",
                          "The data is sourced from ",
                          a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank"),", ",
                          # a(href="https://github.com/nytimes/covid-19-data","New York Times", target = "_blank")," (US State), and ", 
-                         a(href="https://data.worldbank.org","World Bank", target = "_blank"), " and ",
-                         a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),".",br(),
+                         a(href="https://data.worldbank.org","World Bank", target = "_blank"), ", ",
+                         a(href="https://ourworldindata.org/coronavirus","Our World in Data", target = "_blank"), ", ",
+                         a(href="https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker","Oxford University", target = "_blank"),", and ", 
+                         a(href = "https://www.acaps.org/covid19-government-measures-dataset", "ACAPS Organization", target = "_blank"),".",br(),
                          
                          
                          strong("Feedback"),
@@ -493,9 +495,9 @@ ui <- navbarPage("COVID-19 Application",
       
       
       
-      ####### this is a start of a page "policy and profile" ----------------
+      ####### this is a start of a page "policy" ----------------
       
-      tabPanel("World - Policy and Profile",
+      tabPanel("World - Response & Policy",
                
                fluidRow(
                  
@@ -543,15 +545,67 @@ ui <- navbarPage("COVID-19 Application",
                
                fluidRow(
                  
-                column(6,plotOutput("plt_cp_confirmed", height = "500px")),
-                column(6,plotOutput("plt_cp_death", height = "500px"))
+                column(5,plotOutput("plt_cp_confirmed", height = "500px")),
+                column(5,plotOutput("plt_cp_death", height = "500px")),
+                column(2, tableOutput('policy_legend')),
+                useShinyjs(),
+                inlineCSS(list("table" = "font-size: 10px"))
                  ),br(),
                fluidRow(
-                 column(12, dataTableOutput("policy_datatable"), style = "font-size: 75%; width: 100%")
+                 column(12, dataTableOutput("policy_datatable"), style = "font-size: 90%; width: 100%")
                )
       ),
       
                 
+      ####### this is a start of a page "Test"----------------
+      
+      tabPanel("World - Test",
+               
+               fluidRow(
+                 
+                 column(6,
+                        strong("Description"),
+                        "This page XXX"),
+                 column(6,
+                        strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
+                        "The data is sourced from ",
+                        a(href="https://github.com/CSSEGISandData/COVID-19","Johns Hopkins University", target = "_blank")," and ", 
+                        a(href="https://ourworldindata.org/coronavirus","Our World in Data", target = "_blank"),".", br(),
+                        
+                        
+                        strong("Feedback"),
+                        "Please contact us on ",
+                        a(href="https://www.linkedin.com/in/behroozh/","Behrooz Hassani-M, PhD", target = "_blank"), " and ",
+                        a(href="https://www.linkedin.com/in/ytsong/","Yutong (Yuri) Song, PhD", target = "_blank"),".")
+                 
+                 
+               ), br(),
+               
+               fluidRow(
+                 column(2,
+                        pickerInput(inputId = "country9", 
+                                    label = "Country",
+                                    choices = test_dt_init$Country %>% unique(),
+                                    selected = c("Italy", "US"),
+                                    options = list(`actions-box` = TRUE, `live-search` = TRUE,
+                                                   liveSearchStyle = 'contains'),
+                                    multiple = TRUE)
+                 )
+                 
+                 
+               ),br(),
+               
+               
+               fluidRow(         
+                 column(6,plotOutput("plt_test_dayzero_line", height = "350px")),
+                 column(6,plotOutput("plt_test_calendar_line", height = "350px"))),br(),
+               fluidRow(         
+                 column(6,plotOutput("plt_test_latest_cases_per_test", height = "350px")),
+                 column(6,plotOutput("plt_test_latest_cum_total_per_thousand", height = "350px")))
+      ),
+      
+      
+      
       ####### this is a start of a page "State/Province"----------------
       
                 tabPanel("State/Province - Day Zero",
@@ -1042,7 +1096,7 @@ server <- function(input, output, session) {
     
 
     
-    ### policy and profile HERE ---------
+    ### policy  HERE ---------
     
     output$policy_category <- renderUI({
       req(input$policy_data)
@@ -1089,8 +1143,45 @@ server <- function(input, output, session) {
                    )
     )
     
-    
+    output$policy_legend <- renderTable({
+      req(input$policy_data)
+      
+      if(input$policy_data == "ACAPS Organization"){
+        acaps_cat_legend
+      }else if(input$policy_data == "Oxford University"){
+        oxford_cat_legend
+      }
+      
+    }, spacing = "xs", striped = TRUE)
 
+    
+    #### Test HERE -----------
+    
+    output$plt_test_dayzero_line <- renderPlot({
+      req(input$country9)
+      
+      plot_test_line(c = input$country9, x = "days", y = "Cumulative total")
+    })
+    
+    output$plt_test_calendar_line <- renderPlot({
+      req(input$country9)
+      
+      plot_test_line(c = input$country9, x = "Date", y = "Cumulative total per thousand")
+    })
+    
+    output$plt_test_latest_cum_total_per_thousand <- renderPlot({
+      req(input$country9)
+      
+      plot_test_bar(c = input$country9, y = "Cumulative total per thousand")
+    })
+    
+    output$plt_test_latest_cases_per_test <- renderPlot({
+      req(input$country9)
+      
+      plot_test_bar(c = input$country9, y = "cases_per_test")
+    })
+    
+    
     
     ########## State HERE -------------
     
@@ -1100,7 +1191,8 @@ server <- function(input, output, session) {
       req(input$detail_country, input$aspect4, input$detail_state, input$min_case4, 
           input$measure4,tabinfo())
 
-      filtered_state_data(s = input$detail_state, m = input$aspect4, c = input$detail_country, min_case = input$min_case4)
+      filtered_state_data(s = input$detail_state, a = input$aspect4, # m= input$mesure4 ,
+                          c = input$detail_country, min_case = input$min_case4)
   
     })
     
