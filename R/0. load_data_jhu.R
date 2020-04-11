@@ -230,8 +230,10 @@ radar_dt <- wb_dt %>%
 ## load testing data in -----
 
 test_dt_init <- fread("data/testing.csv") %>% 
-  mutate(Date = as.Date(Date),
-         country_last_day =  str_c(Country,  format(max(Date),"%m-%d"), sep = " ")) 
+  mutate(Date = as.Date(Date)) %>% 
+  group_by(Country) %>% 
+  mutate(country_last_day =  str_c(Country,  format(max(Date),"%m-%d"), sep = " "))  %>% 
+  ungroup()
 
 country_test <- dt %>% 
   group_by(country_region, Date, Population) %>% 
