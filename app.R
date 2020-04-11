@@ -559,13 +559,13 @@ ui <- navbarPage("COVID-19 Application",
                 
       ####### this is a start of a page "Test"----------------
       
-      tabPanel("World - Test",
+      tabPanel("World - Testing",
                
                fluidRow(
                  
                  column(6,
                         strong("Description"),
-                        "This page XXX"),
+                        "Understanding the testing patterns across countries is key to being able to make sense of confirmed cases. This page provides you with a range of plots where you can monitor the changes in the testing patterns and also compare the latest level of testing across countries where data is available."),
                  column(6,
                         strong("Acknowledgements"),"We acknowledge and appreciate the support that the RStudio team provided by offering an unlimited access account for this application.",
                         "The data is sourced from ",
@@ -600,8 +600,8 @@ ui <- navbarPage("COVID-19 Application",
                  column(6,plotOutput("plt_test_dayzero_line", height = "350px")),
                  column(6,plotOutput("plt_test_calendar_line", height = "350px"))),br(),
                fluidRow(         
-                 column(6,plotOutput("plt_test_latest_cases_per_test", height = "350px")),
-                 column(6,plotOutput("plt_test_latest_cum_total_per_thousand", height = "350px")))
+                 column(6,plotOutput("plt_test_latest_cases_per_test", height = "450px")),
+                 column(6,plotOutput("plt_test_latest_cum_total_per_thousand", height = "450px")))
       ),
       
       

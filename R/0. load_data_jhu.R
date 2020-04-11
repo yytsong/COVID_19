@@ -230,14 +230,15 @@ radar_dt <- wb_dt %>%
 ## load testing data in -----
 
 test_dt_init <- fread("data/testing.csv") %>% 
-  mutate(Date = as.Date(Date)) 
+  mutate(Date = as.Date(Date),
+         country_last_day =  str_c(Country,  format(max(Date),"%m-%d"), sep = " ")) 
 
 country_test <- dt %>% 
   group_by(country_region, Date, Population) %>% 
   summarise_at(vars(confirmed_cases, death_cases, recovered_cases), funs(sum)) %>% 
   ungroup() %>% 
   filter(country_region %in% unique(test_dt_init$Country)) %>% 
-  select(country_region, Date, confirmed_cases, death_cases, recovered_cases) %>% 
+  select(country_region, Date, confirmed_cases, death_cases, recovered_cases, Population) %>% 
   filter(confirmed_cases > 0) %>% 
   group_by(country_region) %>% 
   mutate(first_day = min(Date)) %>% 
@@ -245,7 +246,7 @@ country_test <- dt %>%
 
 dayzero_test <- test_dt_init %>%
   left_join(country_test %>% distinct(country_region, first_day), by = c("Country" = "country_region")) %>% 
-  mutate(days = as.numeric(Date - first_day)) 
+  mutate(days = as.numeric(Date - first_day))  
 
 dayzero_end_test <- dayzero_test %>%
   group_by(Country) %>%
@@ -253,9 +254,16 @@ dayzero_end_test <- dayzero_test %>%
   ungroup()
 
 
- 
-
-
+# find out use their figure or our population 
+#  x <- test_dt_init %>% 
+#    left_join(country_test, by = c("Country" = "country_region", "Date")) %>% 
+#    group_by(Country) %>% 
+#    fill(Population, first_day, .direction = "up") %>% 
+#    ungroup() %>% 
+#    mutate(test_per_th = `Cumulative total`/Population *1000,
+#           diff = test_per_th/`Cumulative total per thousand`) 
+# 
+# max(x$diff) # 1.100087
 
 
 

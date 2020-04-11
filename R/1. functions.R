@@ -61,6 +61,9 @@ names(c25) <- c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sor
 state_color <- c25[1:length(c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases))]
 
 
+names(c25) <- unique(dayzero_test$country_last_day) %>% sort()
+country_color_test<-  c25[1:length(unique(dayzero_test$country_last_day))]
+
 
 ############# World HERE
 
@@ -834,20 +837,19 @@ plot_test_line <- function(c, x, y){
   
   
   df <- dayzero_test %>% 
-    filter(Country %in% c)
-
+    filter(Country %in% c) 
   
-  plt <- df%>% 
-    ggplot(aes(x = !!xvar, y = !!yvar, group = Country, color = Country)) +
-    geom_point()+
+  plt <- df %>% 
+    ggplot(aes(x = !!xvar, y = !!yvar, group = Country, color = country_last_day)) +
+    geom_point(size = .5)+
     geom_path()+
     geom_text_repel(data = dayzero_end_test %>% filter(Country %in% c), aes(label = Country), size = 5, min.segment.length = 0, segment.color = "grey80")+
-    scale_color_manual(values = country_color)+
+    scale_color_manual(values = country_color_test)+
     theme(legend.position = "none",
           axis.text = element_text(size = 11),
           axis.title = element_text(size = 12),
           title = element_text(size = 13))+
-    scale_y_log10(label = si_vec, breaks = scale_breaks) +
+    scale_y_log10(label = si_vec, breaks = c(0.001,0.01,0.1,0.5,1,2,5,10,50,100,1000,5000,10000,50000,100000,500000,1000000)) +
     labs(caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Our World in Data"))
   
 
@@ -889,21 +891,19 @@ plot_test_bar <- function(c, y){
     
   if(y == "Cumulative total per thousand"){ 
     df <- df
-    ylabel <- "Cumulative Tests per Thousand Population"
+    ylabel <- "Total Tests per Thousand of Population"
   }else if (y == "cases_per_test"){
     df <-   df %>%  mutate(cases_per_test = confirmed_cases / `Cumulative total`) 
-    ylabel <- "Confirmed Cases per Test"
+    ylabel <- "Confirmed Cases per Test [% Positive]"
   }
   
   
  
   
   df %>%
-    ggplot(aes(x = fct_reorder(Country,!!yvar), y = !!yvar, group = Country, fill = Country)) +
+    ggplot(aes(x = fct_reorder(country_last_day,!!yvar), y = !!yvar, group = country_last_day, fill = country_last_day)) +
     geom_col() +
-    scale_color_manual(values = country_color)+
     scale_y_continuous(label = si_vec) +
-    geom_text(aes(label = str_c("As of ", format(Date,"%m-%d"))), y =  max(df[yvar]) *0.1,hjust = 0, size =3)+
     theme(legend.position = "none",
           axis.text = element_text(size = 11),
           axis.title = element_text(size = 12),
@@ -911,35 +911,12 @@ plot_test_bar <- function(c, y){
     labs(x = "", y = ylabel, 
          caption = str_c("By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University & Our World in Data"),
          title = str_c(ylabel, " at the Latest Avaliable Date"))+
+    scale_fill_manual(values = country_color_test)+
     coord_flip()
   
-
-  
-
-  # df %>%
-  #   ggplot(aes(x = fct_reorder(Country,`Cumulative total per thousand`), y = `Cumulative total per thousand`, group = Country, fill = Country)) +
-  #   geom_col() +
-  #   scale_color_manual(values = country_color)+
-  #   scale_y_continuous(label = si_vec) +
-  #   theme(legend.position = "none",
-  #         axis.text = element_text(size = 11),
-  #         axis.title = element_text(size = 12),
-  #         title = element_text(size = 13))+
-  #   coord_flip()+
-  #   labs(x = "", y = "Cumulative Tests per Thousand")
-# 
-#   
-#   
-#   
-# df %>%
-#     ggplot(aes(x = fct_reorder(Country, cases_per_test), y = cases_per_test, group = Country, fill = Country))+
-#     geom_col() +
-#     scale_color_manual(values = country_color)+
-#     scale_y_continuous(label = si_vec) +
-#     theme(legend.position = "none")+
-#     labs(x = "", y = "Confirmed Cases per Test")+
-#     coord_flip()
 } 
+
+
 
 
 
