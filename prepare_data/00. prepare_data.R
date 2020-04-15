@@ -241,8 +241,8 @@ acaps_npi %>%
 
 
 # https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker
-## updated 31/03/2020 checked on 7th April 2020
-oxford_dt <- read_excel("prepare_data/OxCGRT_Download_latest_data.xlsx") %>% 
+## updated 31/03/2020 checked on 15th April 2020
+oxford_dt <- fread("prepare_data/OxCGRT_Download_150420_000028_Full.csv") %>% 
   select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "...35", "Confirmed"))) %>% 
   pivot_longer(cols = starts_with("S"), names_to = "variable", values_to = "value") %>% 
   mutate(vari = case_when(
@@ -256,7 +256,9 @@ oxford_dt <- read_excel("prepare_data/OxCGRT_Download_latest_data.xlsx") %>%
     variable == "S8_Fiscal measures" ~ "Fisc",
     variable == "S9_Monetary measures" ~ "MonM",
     variable == "S10_Emergency investment in health care" ~ "HCInv",
-    variable == "S11_Investment in Vaccines" ~ "VacInv"),
+    variable == "S11_Investment in Vaccines" ~ "VacInv",
+    variable == "S12_Testing framework" ~ "TFrm",
+    variable == "S13_Contact tracing" ~ "ContT"),
     Date = ymd(Date)) %>% 
   rename("Country" = "CountryName") %>% 
   mutate(value = ifelse(vari %in% c("Fisc", "MonM", "VacInv", "HCInv"), si_vec(value), value)) %>% 
