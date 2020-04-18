@@ -211,8 +211,14 @@ library(tidycovid19)
 acaps_npi <- download_acaps_npi_data() %>% 
   mutate(date_implemented = as.Date(date_implemented)) %>% 
   mutate(date_implemented = as.character(date_implemented)) %>% 
-  select(country, iso3c, category, measure, targeted_pop_group, comments, date_implemented, source, source_type, link) 
-
+  rename("link" = "alternative_source") %>% 
+  select(country, iso3c, category, measure, targeted_pop_group, comments, date_implemented, source, source_type, link) %>% 
+  mutate(measure = case_when(
+    measure == "curfews" ~ "Curfews",
+    measure == "strengthening the public health system" ~ "Strengthening the public health system",
+    measure == "testing policy" ~ "Testing policy",
+    measure == "limit public gatherings" ~ "Limit public gatherings",
+    TRUE ~ measure)) 
 
 
 category_npi <- acaps_npi %>%
@@ -223,7 +229,7 @@ category_npi <- acaps_npi %>%
     category == "Lockdown" ~ "LD - Lockdown",
     category == "Movement restrictions" ~ "MR - Movement restrictions",
     category == "Public health measures" ~ "PH - Public health measures",
-    category == "Social and economic measures" ~ "SE - Social and economic measures",
+    category == "Governance and socio-economic measures" ~ "SE - Governance and socio-economic measures",
     category == "Social distancing" ~ "SD - Social distancing")) %>% 
   mutate(code = str_sub(category_final, start = 1L, end = 2L)) %>% 
   group_by(category) %>% 
@@ -293,7 +299,10 @@ test_dt <- read_csv(testing_url) %>%
 # unique(test_dt$Country)[!(unique(test_dt$Country)) %in% unique(dt$country_region)]
 
 
-
+# jhu_mapping table
+jhu_mapping_url <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv"
+jhu_mapping_dt <- read_csv(jhu_mapping_url) %>% 
+  write_csv("prepare_data/jhu_mapping_table.csv")
 
 
 

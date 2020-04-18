@@ -130,7 +130,7 @@ plot_explore_country <- function(df, xc, xm, xa, yc, ym, ya, min_case){
     ggplot(aes(x = xvar, y = yvar, group = country_region, color = country_region))+
     geom_line()+
     geom_point(size = 0.4)+
-    geom_text_repel(data = df_end, aes(label = country_region), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = country_region), size = 5, min.segment.length = 0, segment.color = "grey80")+
     theme(legend.position = "none",
           axis.text = element_text(size = 12),
           axis.title = element_text(size = 13),
@@ -173,7 +173,7 @@ plot_world_lvl <- function(lvl){
   continent_pop <- dt %>% 
     distinct(country_region, !!lvl_new, Population) %>% 
     group_by(!!lvl_new) %>% 
-    summarise(Population = sum(Population))
+    summarise(Population = sum(as.numeric(Population))) # fixed NA
    
   df <- dt %>% 
     group_by(!!lvl_new, Date) %>% 
@@ -182,6 +182,7 @@ plot_world_lvl <- function(lvl){
     left_join(continent_pop, by = lvl) %>% 
     filter(confirmed_cases >0) %>% 
     mutate_at(vars(confirmed_cases, death_cases, recovered_cases), funs(per_capita=./Population*10000000)) %>% 
+    mutate(Date = as.Date(Date)) %>% # change format of date
     group_by(!!lvl_new) %>% 
     mutate(first_day = min(Date), days = Date - first_day) %>%
     ungroup() 
@@ -194,7 +195,7 @@ plot_world_lvl <- function(lvl){
     ggplot(aes(x = days, y = confirmed_cases_per_capita, group = !!lvl_new, color = !!lvl_new))+
     geom_point(size = 0.4)+
     geom_line()+
-    geom_text_repel(data = df_end, aes(label = !!lvl_new), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = !!lvl_new), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_y_log10(labels = si_vec) +
     scale_x_continuous()+
     theme(legend.position = "none")+
@@ -271,7 +272,7 @@ plot_day_passed_day <- function(df, m, a, g, min_case){
     ggplot(aes(x = passed_days, y = !!measure_s, group = !!group_var, color = !!group_var))+
     geom_line()+
     geom_point(size = 0.4)+
-    geom_text_repel(data = df_end, aes(label = !!group_var), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = !!group_var), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_x_continuous(limits = c(0, num_of_days)) +
     theme(legend.position = "none",
           axis.text = element_text(size = 12),
@@ -321,7 +322,7 @@ plot_per_capita <- function(df, m, a, g, min_case){
     ggplot(aes(x = passed_days, y = `cases_per_capita`, group = !!group_var, color = !!group_var))+
     geom_line()+
     geom_point(size = 0.4)+
-    geom_text_repel(data = df_end, aes(label = !!group_var), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = !!group_var), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_x_continuous(limits = c(0, num_of_days)) +
     scale_y_log10(labels = si_vec, breaks = scale_breaks) +
     theme(legend.position = "none",
@@ -382,7 +383,7 @@ plot_new_cases_growth <- function(df,a, min_case){
     geom_smooth(method = "lm", aes(group = 1), color = "grey50")+
    # geom_text(x = 15, y = 15, label = lm_eqn(df = df_new), parse = TRUE) +
    # geom_abline(slope = 0.75, linetype = "dashed", alpha = 0.5, intercept = -0.1)+
-    geom_text_repel(data = df_end, aes(label = country_region), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = country_region), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_x_log10(labels = si_vec, breaks = scale_breaks) +
     scale_y_log10(labels = si_vec, breaks = scale_breaks) +
     theme(legend.position = "none",
@@ -477,7 +478,7 @@ plot_perc_rec <- function(c, r, min_case){
     ggplot(aes(x = cases_per_capita, y = !!yvar, group = country_region, color = country_region))+
     geom_line()+
     geom_point(size = 0.4)+
-    geom_text_repel(data = df_end, aes(label = country_region), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = country_region), size = 5, min.segment.length = 0, segment.color = "grey80")+
     theme(legend.position = "none",
           axis.text = element_text(size = 12),
           axis.title = element_text(size = 13),
@@ -532,7 +533,7 @@ filtered_state_data <- function(s, a, c, min_case){
 }
 
 
-### world bank plots from here
+### world bank plots from here------------------------------------
 
 plot_health_measure <- function(c, m){
   # m <- "hospital_bed"
@@ -567,7 +568,7 @@ plot_health_measure <- function(c, m){
     ggplot(aes(x = days, y = yvar, group = Country, color = Country))+
     geom_line()+
     geom_point(size = 0.4)+
-    geom_text_repel(data = df_end, aes(label = Country), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = Country), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_x_continuous(limits = c(0, num_of_days)) +
     theme(legend.position = "none",
           axis.text = element_text(size = 9),
@@ -609,7 +610,7 @@ plot_death_crude <- function(c, m){
     ggplot(aes(x = days, y = !!measure_s, group = Country, color = Country))+
     geom_line()+
     geom_point(size = 0.4)+
-    geom_text_repel(data = df_end, aes(label = Country), size = 5, min.segment.length = 0)+
+    geom_text_repel(data = df_end, aes(label = Country), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_x_continuous(limits = c(0, num_of_days)) +
     theme(legend.position = "none",
           axis.text = element_text(size = 9),
@@ -626,7 +627,7 @@ plot_death_crude <- function(c, m){
 }
 
 
-### country profile
+### policy profile---------------------------------
 
 plot_cp_day <- function(c, a, l_dt, policy_cat){
   
@@ -685,7 +686,7 @@ plot_cp_day <- function(c, a, l_dt, policy_cat){
   label_dt %>% 
     ggplot(aes(x = Date, y = incident_cases, group = Country, label = text))+
     geom_col(fill = "grey60", color = "white", alpha = 0.7)+
-    geom_text_repel(min.segment.length = 0, size = 4,
+    geom_text_repel(min.segment.length = 0, segment.color = "grey80", size = 4,
                    force = 1, #point.padding = unit(1, 'lines'),
                    vjust = 1, direction = 'y', nudge_y =  1)+
     scale_y_continuous(labels = si_vec) +
@@ -751,7 +752,7 @@ policy_datatable_dt <- function(c, a = "Confirmed Cases", l_dt, policy_cat){
 }
 
 
-### moved to healthcare system
+### moved to healthcare system ------------------------
 
 plot_death_con <- function(c){
   
@@ -827,7 +828,7 @@ if(length(c) == 1){}else{
 }
 
 
-### functions for plot testing data 
+### functions for plot testing data --------------------------
 
 
 plot_test_line <- function(c, x, y){
