@@ -1,3 +1,24 @@
+library(shiny)
+library(shinyWidgets)
+library(shinyjs)
+library(tidyverse)
+library(scales)
+library(data.table)
+library(lubridate)
+library(ggrepel)
+library(xml2)
+library(bit64)
+library(RCurl)
+library(httr)
+library(readxl)
+library(wbstats)
+library(DT)
+library(fmsb)
+pkgload::load_all(path= "GAlogger/")
+theme_set(theme_minimal())
+source("R/0. load_data_jhu.R")
+source("R/1. functions.R")
+
 ### this is to process data
 
 
@@ -248,7 +269,7 @@ acaps_npi %>%
 
 # https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker
 ## updated 31/03/2020 checked on 15th April 2020
-oxford_dt <- fread("prepare_data/OxCGRT_Download_150420_000028_Full.csv") %>% 
+oxford_dt <- fread("prepare_data/OxCGRT_Download_200420_021439_Full.csv") %>% 
   select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "...35", "Confirmed"))) %>% 
   pivot_longer(cols = starts_with("S"), names_to = "variable", values_to = "value") %>% 
   mutate(vari = case_when(
