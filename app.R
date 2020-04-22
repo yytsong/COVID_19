@@ -20,6 +20,12 @@ theme_set(theme_minimal())
 source("R/0. load_data_jhu.R")
 source("R/1. functions.R")
 
+Sys.setenv('GALOG_UA_TRACKINGID' = "UA-161256542-1")
+# Sys.setenv('GALOG_UA_USERID' = "datascientist-workstation-xyz")
+# Sys.setenv('GALOG_UA_CLIENTID' = "a5d1eeb6-0459-11e8-8912-134976ff196e")
+Sys.setenv('GALOG_HOSTNAME' = "behroozh.shinyapps.io/COVID19/")
+Sys.setenv('GALOG_CONSENT' = "yes")
+
 
 
 
@@ -705,6 +711,22 @@ server <- function(input, output, session) {
   
   ga_set_tracking_id("UA-161256542-1")
   ga_set_approval(consent = TRUE)
+  
+  
+  ga_collect_pageview(page = "/About")
+  ga_collect_pageview(page = "/World - Explorer", title = "Explorer")
+  ga_collect_pageview(page = "/World - Day Zero", title = "DayZero")
+  ga_collect_pageview(page = "/World - Growth", title = "Grwoth")
+  ga_collect_pageview(page = "/World - Ratio", title = "Ratio")
+  ga_collect_pageview(page = "/World - Healthcare System", title = "Healthcare")
+  ga_collect_pageview(page = "/World - Ratio", title = "Ratio")
+  ga_collect_pageview(page = "/World - Response & Policy", title = "Policy")
+  ga_collect_pageview(page = "/World - Testing", title = "Testing")
+  ga_collect_pageview(page = "/State/Province - Day Zero", title = "State")
+  ga_collect_pageview(page = "/home", title = "Homepage")
+  
+  
+  ga_collect_event(event_category = "Start", event_action = "shiny app launched")
   
   
   ##### first page -------
