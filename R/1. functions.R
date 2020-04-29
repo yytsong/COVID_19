@@ -1,6 +1,6 @@
 # test functions
 
-# c <- c("Italy", "China")
+# c <- c("Italy", "US")
 # #c("China", "Australia", "US", "Russia", "UK", "South Korea", "Italy", "Spain")
 # #dt$country_region %>% unique()
 # p <- dt %>% filter(country_region %in% c) %>% distinct(province_state) %>% pull()
@@ -61,9 +61,22 @@ names(c25) <- c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sor
 state_color <- c25[1:length(c(au_state_sorted_by_cases, ch_state_sorted_by_cases, us_state_sorted_by_cases))]
 
 
-names(c25) <- unique(dayzero_test$country_last_day) %>% sort()
-country_color_test<-  c25[1:length(unique(dayzero_test$country_last_day))]
+# names(c25) <- unique(dayzero_test$country_last_day) %>% sort()
+# country_color_test<-  c25[1:length(unique(dayzero_test$country_last_day))]
 
+# use consistent color from previous tabs
+country_color_test_df <- country_color %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "Country") %>% 
+  rename("color" = ".") %>% 
+  full_join(dayzero_test %>% distinct(Country, country_last_day)) %>% 
+  filter(!is.na(country_last_day), !is.na(`color`)) %>% 
+  select(-Country) %>% 
+  mutate(color= as.character(color))
+
+
+country_color_test <- country_color_test_df[,"color"]
+names(country_color_test) <- country_color_test_df[,"country_last_day"]
 
 ############# World HERE
 
@@ -887,6 +900,8 @@ plot_test_bar <- function(c, y){
     filter(Country %in% c) %>% 
     left_join(country_test,  by = c("Country" = "country_region", "Date")) %>% 
     group_by(Country) %>% 
+    ## added this filter to get rid of the problem when confirmed_cases is not available but testing
+    filter(!is.na(confirmed_cases)) %>% 
     filter(Date == last(Date)) %>% 
     ungroup() 
     

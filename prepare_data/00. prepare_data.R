@@ -227,6 +227,7 @@ detailed_country_dt <- rbind(au_dt, ch_dt, us_dt) %>%
 
 # ### source https://www.r-bloggers.com/meet-tidycovid19-yet-another-covid-19-related-r-package/
 # ### connect to https://www.acaps.org/covid19-government-measures-dataset
+# remotes::install_github("joachim-gassen/tidycovid19")
 library(tidycovid19)
 
 acaps_npi <- download_acaps_npi_data() %>% 
@@ -269,26 +270,37 @@ acaps_npi %>%
 
 # https://www.bsg.ox.ac.uk/research/research-projects/oxford-covid-19-government-response-tracker
 ## updated 31/03/2020 checked on 15th April 2020
-oxford_dt <- fread("prepare_data/OxCGRT_Download_200420_021439_Full.csv") %>% 
-  select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "...35", "Confirmed"))) %>% 
-  pivot_longer(cols = starts_with("S"), names_to = "variable", values_to = "value") %>% 
+## updated source to Github https://github.com/yurisong1/covid-policy-tracker
+## Oxford stopped data collection and will return on 27th April 2020
+
+oxford_policy_url <- "https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest_withnotes.csv"
+
+oxford_dt <- read_csv(oxford_policy_url) %>% 
+  # fread("prepare_data/OxCGRT_Download_200420_021439_Full.csv") %>% 
+  select(-contains(c("Notes", "IsGeneral", "StringencyIndex", "Confirmed", "Flag"))) %>% 
+  pivot_longer(cols = c(str_subset(colnames(.), pattern =  "[A-Z]{1}[0-9]{1}")), names_to = "variable", values_to = "value") %>% 
   mutate(vari = case_when(
-    variable == "S1_School closing" ~ "Sch",
-    variable == "S2_Workplace closing" ~ "Wrk",
-    variable == "S3_Cancel public events" ~ "PEv",
-    variable == "S4_Close public transport" ~ "PTran",
-    variable == "S5_Public information campaigns" ~ "PInfo",
-    variable == "S6_Restrictions on internal movement" ~ "IMov",
-    variable == "S7_International travel controls" ~ "ITrav",
-    variable == "S8_Fiscal measures" ~ "Fisc",
-    variable == "S9_Monetary measures" ~ "MonM",
-    variable == "S10_Emergency investment in health care" ~ "HCInv",
-    variable == "S11_Investment in Vaccines" ~ "VacInv",
-    variable == "S12_Testing framework" ~ "TFrm",
-    variable == "S13_Contact tracing" ~ "ContT"),
+    variable == "C1_School closing" ~ "Sch",
+    variable == "C2_Workplace closing" ~ "Wrk",
+    variable == "C3_Cancel public events" ~ "PEv",
+    variable == "C4_Restrictions on gatherings" ~ "Gathr",
+    variable == "C5_Close public transport" ~ "PTran",
+    variable == "C6_Stay at home requirements" ~ "Hom",
+    variable == "C7_Restrictions on internal movement" ~ "Mov",
+    variable == "C8_International travel controls" ~ "ITrav",
+    variable == "E1_Income support" ~ "IncS",
+    variable == "E2_Debt/contract relief" ~ "Contr",
+    variable == "E3_Fiscal measures" ~ "Fisc",
+    variable == "E4_International support" ~ "IntS",
+    variable == "H1_Public information campaigns" ~ "PInfo",
+    variable == "H2_Testing policy" ~ "Test",
+    variable == "H3_Contact tracing" ~ "ContrT",
+    variable == "H4_Emergency investment in healthcare" ~ "InvH",
+    variable == "H5_Investment in vaccines" ~ "Vacc",
+    variable == "M1_Wildcard" ~ "Wild"),
     Date = ymd(Date)) %>% 
   rename("Country" = "CountryName") %>% 
-  mutate(value = ifelse(vari %in% c("Fisc", "MonM", "VacInv", "HCInv"), si_vec(value), value)) %>% 
+  mutate(value = ifelse(vari %in% c("Fisc", "Vacc", "IntS", "InvH"), si_vec(value), value)) %>% 
   write_csv("data/oxford_clean.csv")
 
 
