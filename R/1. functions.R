@@ -24,7 +24,7 @@
 
 # scales of plots
 
-scale_breaks <- c(0,5,10,25,50,100,250,500,1000,2500,5000, 10000,25000,50000,100000,250000)
+scale_breaks <- c(0,5,10,25,50,100,250,500,1000,2500,5000, 10000,25000,50000,100000,250000, 500000, 750000, 1000000, 150000)
 # reverselog_trans <- function(base = exp(1)) { 
 #   trans <- function(x) -log(x, base) 
 #   inv <- function(x) base^(-x) 
@@ -209,7 +209,7 @@ plot_world_lvl <- function(lvl){
     geom_point(size = 0.4)+
     geom_line()+
     geom_text_repel(data = df_end, aes(label = !!lvl_new), size = 5, min.segment.length = 0, segment.color = "grey80")+
-    scale_y_log10(labels = si_vec) +
+    scale_y_log10(labels = si_vec, breaks = scale_breaks) +
     scale_x_continuous()+
     theme(legend.position = "none")+
     labs(x = "Days since the First Case Reported from each Continent", 
@@ -281,6 +281,8 @@ plot_day_passed_day <- function(df, m, a, g, min_case){
   
   num_of_days <- max(df_new$passed_days) +3
   
+  #max_y <- df_new %>% select(!!measure_s) %>% max()
+  
   df_new %>% 
     ggplot(aes(x = passed_days, y = !!measure_s, group = !!group_var, color = !!group_var))+
     geom_line()+
@@ -296,7 +298,8 @@ plot_day_passed_day <- function(df, m, a, g, min_case){
           x = str_c("Days since ", m, " >= ", min_case, " from each ", xtitle, sep = ""),
           title = str_c ("COVID-19 ", a, " @ ", latest_date," AEDT", "\n","(Y-axis is logged)"),
           y = "Number of Reported Cases - Log Scale")+
-    scale_y_log10(labels = si_vec, breaks = scale_breaks)
+    scale_y_log10(labels = si_vec, breaks = c(scale_breaks#, max_y
+                                              ))
   
 }
 
@@ -330,6 +333,8 @@ plot_per_capita <- function(df, m, a, g, min_case){
   
   num_of_days <- max(df_new$passed_days) +3
   
+ # max_y <- df_new$`cases_per_capita` %>% max() %>% round()
+  
   
   df_new %>% 
     ggplot(aes(x = passed_days, y = `cases_per_capita`, group = !!group_var, color = !!group_var))+
@@ -337,7 +342,8 @@ plot_per_capita <- function(df, m, a, g, min_case){
     geom_point(size = 0.4)+
     geom_text_repel(data = df_end, aes(label = !!group_var), size = 5, min.segment.length = 0, segment.color = "grey80")+
     scale_x_continuous(limits = c(0, num_of_days)) +
-    scale_y_log10(labels = si_vec, breaks = scale_breaks) +
+    scale_y_log10(labels = si_vec, breaks = c(scale_breaks#,max_y
+                                              )) +
     theme(legend.position = "none",
           axis.text = element_text(size = 12),
           axis.title = element_text(size = 13),
@@ -630,9 +636,9 @@ plot_death_crude <- function(c, m){
           axis.title = element_text(size = 10),
           title = element_text(size = 11))+
     scale_colour_manual(values = country_color)+
-    scale_y_log10(labels = comma_format(accuracy = .01), breaks = c(0.01, 0.05, 0.1, 0.5, 1, 2,4))+
+    scale_y_log10(labels = comma_format(accuracy = .01), breaks = c(0.01, 0.05, 0.1, 0.5, 1, 2,5,10,15,20,30))+
     #  scale_y_log10(labels = si_vec, reverse = TRUE)+  
-    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
+    labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University - World Bank"),
           x = str_c("Days since First Confirmed Case from each Country", sep = ""),
           title = str_c ("COVID-19 ", ytitle, "\n","@ ", latest_date," AEDT", " (Y-axis is logged)"),
           y = ytitle)
