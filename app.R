@@ -29,7 +29,9 @@ Sys.setenv('GALOG_CONSENT' = "yes")
 
 
 
-ui <- navbarPage("COVID-19 Application",
+
+
+ui <- function(request){ navbarPage("COVID-19 Application",
                  
                  id = "tab",
                  selected = "About",
@@ -227,7 +229,11 @@ ui <- navbarPage("COVID-19 Application",
                                                 label = "Y - Actual/Per Capita",
                                                 choices = c("Actual", "Per Capita (10 Million)"),
                                                 selected = "Actual",
-                                                multiple= FALSE))), # close fluidrow
+                                                multiple= FALSE)),
+                             
+                             column(2,bookmarkButton(id = "bm_world_explorer", label = "Bookmark", title = "Bookmark this tab"))
+                             
+                             ), # close fluidrow
                            br(),
                          
                          
@@ -301,7 +307,9 @@ ui <- navbarPage("COVID-19 Application",
                             min = 0,
                             max = 1000,
                             value = 10,
-                            step = 1))
+                            step = 1)),
+                   
+                 column(2,bookmarkButton(id = "bm_world_dayzero", label = "Bookmark", title = "Bookmark this tab"))
                    
                    ),br(),
                               
@@ -366,7 +374,9 @@ ui <- navbarPage("COVID-19 Application",
                                     min = 0,
                                     max = 1000,
                                     value = 10,
-                                    step = 1))
+                                    step = 1)),
+                           column(2,bookmarkButton(id = "bm_world_growth", label = "Bookmark", title = "Bookmark this tab"))
+                           
                            
                            ),br(),
                          
@@ -422,7 +432,9 @@ ui <- navbarPage("COVID-19 Application",
                                     min = 0,
                                     max = 1000,
                                     value = 10,
-                                    step = 1))
+                                    step = 1)),
+                           column(2,bookmarkButton(id = "bm_world_ratio", label = "Bookmark", title = "Bookmark this tab"))
+                           
                            
                            
                            ),br(),
@@ -470,7 +482,9 @@ ui <- navbarPage("COVID-19 Application",
                                                    liveSearchStyle = 'contains'),
                                     multiple = TRUE)),
                  
-                 column(2, uiOutput("country7"))
+                 column(2, uiOutput("country7")),
+                 column(2,bookmarkButton(id = "bm_world_health", label = "Bookmark", title = "Bookmark this tab"))
+                 
 
                ),br(),
                fluidRow(
@@ -545,7 +559,9 @@ ui <- navbarPage("COVID-19 Application",
                                                    liveSearchStyle = 'contains'),
                                     multiple = FALSE)),
                  
-                 column(2, uiOutput("policy_category"))
+                 column(2, uiOutput("policy_category")),
+                 column(2,bookmarkButton(id = "bm_world_policy", label = "Bookmark", title = "Bookmark this tab"))
+                 
                  
                ),br(),
                
@@ -596,7 +612,9 @@ ui <- navbarPage("COVID-19 Application",
                                     options = list(`actions-box` = TRUE, `live-search` = TRUE,
                                                    liveSearchStyle = 'contains'),
                                     multiple = TRUE)
-                 )
+                 ),
+                 column(2,bookmarkButton(id = "bm_world_test", label = "Bookmark", title = "Bookmark this tab"))
+                 
                  
                  
                ),br(),
@@ -672,7 +690,10 @@ ui <- navbarPage("COVID-19 Application",
                                     min = 0,
                                     max = 1000,
                                     value = 5,
-                                    step = 1))
+                                    step = 1)),
+                           
+                           column(2,bookmarkButton(id = "bm_world_state", label = "Bookmark", title = "Bookmark this tab"))
+                           
                            
                          ),br(),
                          
@@ -706,8 +727,13 @@ ui <- navbarPage("COVID-19 Application",
                  
 )
 
+}
+  
+  
 ###### start of server -----------------------
 server <- function(input, output, session) {
+  
+  ## for google analytics to work ----------
   
   ga_set_tracking_id("UA-161256542-1")
   ga_set_approval(consent = TRUE)
@@ -727,6 +753,49 @@ server <- function(input, output, session) {
   
   
   ga_collect_event(event_category = "Start", event_action = "shiny app launched")
+  
+  
+  
+  
+  # ### for bookmark to work ----------------
+
+  setBookmarkExclude(c("bm_world_explorer", "bm_world_dayzero", "bm_world_growth","bm_world_ratio",
+                       "bm_world_health","bm_world_policy","bm_world_test","bm_world_state"))
+
+  # Trigger bookmarking with either button -----------------
+  observeEvent(input$bm_world_explorer, {
+    session$doBookmark()
+  })
+
+  observeEvent(input$bm_world_dayzero, {
+    session$doBookmark()
+  })
+
+  
+  observeEvent(input$bm_world_growth, {
+    session$doBookmark()
+  })
+  
+  observeEvent(input$bm_world_ratio, {
+    session$doBookmark()
+  })
+  
+  observeEvent(input$bm_world_health, {
+    session$doBookmark()
+  })
+  
+  observeEvent(input$bm_world_policy, {
+    session$doBookmark()
+  })
+  
+  observeEvent(input$bm_world_test, {
+    session$doBookmark()
+  })
+  
+  observeEvent(input$bm_world_state, {
+    session$doBookmark()
+  })
+  
   
   
   ##### first page -------
@@ -762,30 +831,30 @@ server <- function(input, output, session) {
                 multiple= TRUE)
   })
   
-  observe({
-      
-      if(length(input$region0) == 0){
-      
-        country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country0",
-                          choices = country0,
-                          selected = c("US", "Italy"))  
-        
-          
-      }else if(length(input$region0) > 0){
-      
-        country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
-        
-      updatePickerInput(session = session,
-                        inputId = "country0",
-                        choices = country0,
-                        selected = NULL)
-                       
-      }
-    
-  })
+  # observe({
+  #     
+  #     if(length(input$region0) == 0){
+  #     
+  #       country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
+  #       
+  #       updatePickerInput(session = session,
+  #                         inputId = "country0",
+  #                         choices = country0,
+  #                         selected = c("US", "Italy"))  
+  #       
+  #         
+  #     }else if(length(input$region0) > 0){
+  #     
+  #       country0 <- region_country_list %>% filter(Continent %in% input$region0) %>% pull(country_region) %>% sort()
+  #       
+  #     updatePickerInput(session = session,
+  #                       inputId = "country0",
+  #                       choices = country0,
+  #                       selected = NULL)
+  #                      
+  #     }
+  #   
+  # })
   
   world_explore_dt <- reactive({
     req(input$region0, input$country0, input$measure_x, input$aspect_x, input$actual_x,  
@@ -836,6 +905,7 @@ server <- function(input, output, session) {
   
     ##### world day zero ------
 
+
   output$country <- renderUI({
     req(input$region)
     
@@ -851,30 +921,30 @@ server <- function(input, output, session) {
     
   })
   
-  observe({
-    
-    if(length(input$region) == 0){
-      
-      country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
-      
-      updatePickerInput(session = session,
-                        inputId = "country",
-                        choices = country,
-                        selected = c("US", "Italy"))  
-      
-      
-    }else if(length(input$region) > 0){
-      
-      country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
-      
-      updatePickerInput(session = session,
-                        inputId = "country",
-                        choices = country,
-                        selected = NULL)
-      
-    }
-    
-  })
+  # observe({
+  #   
+  # if(length(input$region) == 0){
+  #     
+  #     country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
+  #     
+  #     updatePickerInput(session = session,
+  #                       inputId = "country",
+  #                       choices = country,
+  #                       selected = c("US", "Italy"))  
+  #     
+  #     
+  #   }else if(length(input$region) > 0){
+  #     
+  #     country <- region_country_list %>% filter(Continent %in% input$region) %>% pull(country_region) %>% sort()
+  #     
+  #     updatePickerInput(session = session,
+  #                       inputId = "country",
+  #                       choices = country,
+  #                       selected = NULL)
+  #     
+  #   }
+  #   
+  # })
   
     pass_day_dt <- reactive({
         req(input$region,input$country,input$aspect, input$min_case)
@@ -899,6 +969,8 @@ server <- function(input, output, session) {
         #    config(displayModeBar = TRUE) 
     })
     
+
+    
     ##### world growth ------------
     output$country2 <- renderUI({
       req(input$region2)
@@ -915,30 +987,30 @@ server <- function(input, output, session) {
       
     })
     
-    observe({
-      
-      if(length(input$region2) == 0){
-        
-        country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country2",
-                          choices = country2,
-                          selected = c("US", "Italy"))  
-        
-        
-      }else if(length(input$region2) > 0){
-        
-        country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country2",
-                          choices = country2,
-                          selected = NULL)
-        
-      }
-      
-    })
+    # observe({
+    #   
+    #   if(length(input$region2) == 0){
+    #     
+    #     country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
+    #     
+    #     updatePickerInput(session = session,
+    #                       inputId = "country2",
+    #                       choices = country2,
+    #                       selected = c("US", "Italy"))  
+    #     
+    #     
+    #   }else if(length(input$region2) > 0){
+    #     
+    #     country2 <- region_country_list %>% filter(Continent %in% input$region2) %>% pull(country_region) %>% sort()
+    #     
+    #     updatePickerInput(session = session,
+    #                       inputId = "country2",
+    #                       choices = country2,
+    #                       selected = NULL)
+    #     
+    #   }
+    #   
+    # })
     
     pass_day_dt2 <- reactive({
       req(input$region2,input$country2, input$aspect5, input$min_case2)
@@ -981,30 +1053,30 @@ server <- function(input, output, session) {
       
     })
     
-    observe({
-      
-      if(length(input$region3) == 0){
-        
-        country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country3",
-                          choices = country3,
-                          selected = c("US","Italy"))  
-        
-        
-      }else if(length(input$region3) > 0){
-        
-        country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country3",
-                          choices = country3,
-                          selected = NULL)
-        
-      }
-      
-    })
+    # observe({
+    #   
+    #   if(length(input$region3) == 0){
+    #     
+    #     country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
+    #     
+    #     updatePickerInput(session = session,
+    #                       inputId = "country3",
+    #                       choices = country3,
+    #                       selected = c("US","Italy"))  
+    #     
+    #     
+    #   }else if(length(input$region3) > 0){
+    #     
+    #     country3 <- region_country_list %>% filter(Continent %in% input$region3) %>% pull(country_region) %>% sort()
+    #     
+    #     updatePickerInput(session = session,
+    #                       inputId = "country3",
+    #                       choices = country3,
+    #                       selected = NULL)
+    #     
+    #   }
+    #   
+    # })
     
     output$plt_perc_recovery <- renderPlot({
       req(input$region3,input$country3, input$min_case3)
@@ -1038,30 +1110,30 @@ server <- function(input, output, session) {
                          multiple = TRUE)
     })
     
-    observe({
-      
-      if(length(input$region7) == 0){
-        
-        country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country7",
-                          choices = country7,
-                          selected = c("Italy", "US"))  
-        
-        
-      }else if(length(input$region7) > 0){
-        
-        country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
-        
-        updatePickerInput(session = session,
-                          inputId = "country7",
-                          choices = country7,
-                          selected = NULL)
-        
-      }
-      
-    })
+    # observe({
+    #   
+    #   if(length(input$region7) == 0){
+    #     
+    #     country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
+    #     
+    #     updatePickerInput(session = session,
+    #                       inputId = "country7",
+    #                       choices = country7,
+    #                       selected = c("Italy", "US"))  
+    #     
+    #     
+    #   }else if(length(input$region7) > 0){
+    #     
+    #     country7 <- wb_dt %>% distinct(Continent, Country) %>% filter(Continent %in% input$region7) %>% pull(Country)%>% sort()
+    #     
+    #     updatePickerInput(session = session,
+    #                       inputId = "country7",
+    #                       choices = country7,
+    #                       selected = NULL)
+    #     
+    #   }
+    #   
+    # })
     
 
     
@@ -1248,8 +1320,10 @@ server <- function(input, output, session) {
     
 }
 
+
+
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server, enableBookmarking = "url")
 
 
 
