@@ -571,7 +571,7 @@ ui <- function(request){ navbarPage("COVID-19 Application",
                 column(5,plotOutput("plt_cp_death", height = "500px")),
                 column(2, tableOutput('policy_legend')),
                 useShinyjs(),
-                inlineCSS(list("table" = "font-size: 10px"))
+                inlineCSS(list("table" = "font-#33333333333333333333333333333333333333333333333333size: 10px"))
                  ),br(),
                fluidRow(
                  column(12, dataTableOutput("policy_datatable"), style = "font-size: 90%; width: 100%")
