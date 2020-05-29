@@ -383,12 +383,43 @@ lm_eqn <- function(df){
 }
 
 
-plot_new_cases_growth <- function(df,a, min_case){
+plot_new_cases_growth <- function(c,a, min_case){
+  
+  if(identical(a, "Confirmed Cases")){
+    aspect <- sym("confirmed_cases")
+  }else if(identical(a, "Death Cases")){
+    aspect <- sym("death_cases")
+  }else{
+    aspect <- sym("recovered_cases")
+  }
+  
+df <- 
+  dt %>% 
+    filter(country_region %in% c) %>% 
+    rename("cumulative_cases" = aspect) %>% 
+    group_by(`country_region`, Date) %>% 
+    summarise(cumulative_cases = sum(cumulative_cases)) %>% 
+  ungroup() %>% 
+  left_join(pop, by = c("country_region" = "Country")) %>% 
+  mutate(per_capita = cumulative_cases/Population*10000000) %>% 
+  filter(per_capita >= min_case) %>% 
+  select(-cumulative_cases) %>% 
+  group_by(`country_region`) %>% 
+  #  filter(cumulative_cases >= min_case) %>% ### change the minimum dates
+    mutate(first_day = min(Date)) %>% 
+    pivot_wider(names_from = "Date", values_from = "per_capita") %>% 
+    pivot_longer(cols = starts_with("2020-"), names_to = "Date", values_to = "per_capita") %>% 
+    arrange(country_region,Date) %>% 
+    mutate(Date = as.Date(Date), passed_days = Date - first_day, 
+           incident_cases = ifelse(is.na(lag(per_capita)), per_capita , per_capita - lag(per_capita))) %>% 
+    ungroup() %>% 
+    filter(passed_days >= 0)
+  
   
   df_new <- df %>% 
    # filter(!is.nan(!!measure_s), !!measure_s>=0, !is.na(!!measure_s)) %>% 
-    mutate(next_day = lag(incident_cases)/Population*10000000,
-           per_capita = cumulative_cases/Population*10000000)  %>% 
+    mutate(next_day = lag(incident_cases),
+           per_capita = per_capita)  %>% 
     filter(!is.na(next_day))
   
   df_end <- df_new %>%
@@ -412,18 +443,48 @@ plot_new_cases_growth <- function(df,a, min_case){
     scale_colour_manual(values = country_color)+  
     labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
           x = "Number of Cumulative Cases Per 10 Million Population - Log Scale",
-          title = str_c ("COVID-19 ", a, " (since ", min_case ," Cases) Growth Rate @ ", latest_date," AEDT", "\n",lm_eqn(df = df_new), "(XY-axis is logged)"),
+          title = str_c ("COVID-19 ", a, " (since ", min_case ," Cases / 10M) Growth Rate @ ", latest_date," AEDT", "\n",lm_eqn(df = df_new), "(XY-axis is logged)"),
           y = "Number of Reported Cases Next Day Per 10 Million Population - Log Scale")
   
 }
 
-plot_new_case_growth_facet <- function(df,a, min_case){
+plot_new_case_growth_facet <- function(c,a, min_case){
+  
+  if(identical(a, "Confirmed Cases")){
+    aspect <- sym("confirmed_cases")
+  }else if(identical(a, "Death Cases")){
+    aspect <- sym("death_cases")
+  }else{
+    aspect <- sym("recovered_cases")
+  }
+  
+  df <- 
+    dt %>% 
+    filter(country_region %in% c) %>% 
+    rename("cumulative_cases" = aspect) %>% 
+    group_by(`country_region`, Date) %>% 
+    summarise(cumulative_cases = sum(cumulative_cases)) %>% 
+    ungroup() %>% 
+    left_join(pop, by = c("country_region" = "Country")) %>% 
+    mutate(per_capita = cumulative_cases/Population*10000000) %>% 
+    filter(per_capita >= min_case) %>% 
+    select(-cumulative_cases) %>% 
+    group_by(`country_region`) %>% 
+    #  filter(cumulative_cases >= min_case) %>% ### change the minimum dates
+    mutate(first_day = min(Date)) %>% 
+    pivot_wider(names_from = "Date", values_from = "per_capita") %>% 
+    pivot_longer(cols = starts_with("2020-"), names_to = "Date", values_to = "per_capita") %>% 
+    arrange(country_region,Date) %>% 
+    mutate(Date = as.Date(Date), passed_days = Date - first_day, 
+           incident_cases = ifelse(is.na(lag(per_capita)), per_capita , per_capita - lag(per_capita))) %>% 
+    ungroup() %>% 
+    filter(passed_days >= 0)
   
   
   df_new <- df %>% 
   #  filter(!is.nan(!!measure_s), !!measure_s>=0, !is.na(!!measure_s)) %>% 
-    mutate(next_day = lag(incident_cases)/Population*10000000,
-           per_capita = cumulative_cases/Population*10000000)  %>% 
+    mutate(next_day = lag(incident_cases),
+           per_capita = per_capita)  %>% 
     filter(!is.na(next_day))
   
   df_end <- df_new %>%
@@ -455,7 +516,7 @@ plot_new_case_growth_facet <- function(df,a, min_case){
     #scale_colour_manual(values = country_color)+  
     labs (caption = str_c("\n","By: @behrooz_hm @yurisyt (Monash University) / Data: Johns Hopkins University"),
           x = "Number of Cumulative Cases Per 10 Million Population - Log Scale",
-          title = str_c ("COVID-19 ", a, " (since ", min_case, " Cases) Growth Rate @ ", latest_date," AEDT", "\n"#,"(XY-axis is logged)", " Dashed Red Line Represents 10% Daily Growth."
+          title = str_c ("COVID-19 ", a, " (since ", min_case, " Cases / 10M) Growth Rate @ ", latest_date," AEDT", "\n"#,"(XY-axis is logged)", " Dashed Red Line Represents 10% Daily Growth."
                          ),
           y = "Number of Reported Cases Next Day Per 10 Million Population - Log Scale") +
     facet_wrap(~ country_region, scale = "free")

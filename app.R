@@ -370,7 +370,7 @@ ui <- function(request){ navbarPage("COVID-19 Application",
                            column(2,
                                   numericInput(
                                     inputId = "min_case2",
-                                    label = "Since Measured Cases >=",
+                                    label = "Since Measured Cases / 10M >=",
                                     min = 0,
                                     max = 1000,
                                     value = 10,
@@ -1012,25 +1012,27 @@ server <- function(input, output, session) {
     #   
     # })
     
-    pass_day_dt2 <- reactive({
-      req(input$region2,input$country2, input$aspect5, input$min_case2)
-      
-      filtered_day_passed_data(c = input$country2, a = input$aspect5, min_case = input$min_case2)
-      
-    })
+    # pass_day_dt2 <- reactive({
+    #   req(input$region2,input$country2, input$aspect5, input$min_case2)
+    #   
+    #   filtered_day_passed_data(c = input$country2, a = input$aspect5, min_case = input$min_case2)
+    #   
+    # })
     
     output$plt_pass_day_2 <- renderPlot({
-      req(input$region2,input$country2, pass_day_dt2(), input$aspect5, input$min_case2)
+      req(input$region2,input$country2, #pass_day_dt2(), 
+          input$aspect5, input$min_case2)
       # ggplotly(
-      plot_new_cases_growth(df = pass_day_dt2(), a = input$aspect5, min_case = input$min_case2
+      plot_new_cases_growth(c = input$country2,  a = input$aspect5, min_case = input$min_case2
       )#, tooltip = "text") %>%
       #    config(displayModeBar = TRUE) 
     })
     
     output$plt_per_capita_2 <- renderPlot({
-      req(input$region2, input$country2, pass_day_dt2(), input$aspect5, input$min_case2)
+      req(input$region2, input$country2, #pass_day_dt2(), 
+          input$aspect5, input$min_case2)
       # ggplotly(
-      plot_new_case_growth_facet(df = pass_day_dt2(), a = input$aspect5, min_case = input$min_case2
+      plot_new_case_growth_facet(c = input$country2, a = input$aspect5, min_case = input$min_case2
       )#, tooltip = "text") %>%
       #    config(displayModeBar = TRUE) 
     })
