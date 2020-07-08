@@ -22,7 +22,8 @@ source("R/1. functions.R")
 ### this is to process data
 
 
-wp_region <- read_excel("prepare_data/reg_country_wiki.xlsx")
+wp_region <- read_excel("prepare_data/reg_country_wiki.xlsx") %>% 
+  mutate(Country = ifelse(Country == "Burma", "Myanmar", Country))
 
 pop <- fread("prepare_data/world_pop.csv") %>% 
   mutate(Country = str_remove(Country, pattern = "\xca"),
