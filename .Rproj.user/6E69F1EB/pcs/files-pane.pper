@@ -1,0 +1,9 @@
+{
+    "path" : "~/Dropbox/COVID_19/data",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
