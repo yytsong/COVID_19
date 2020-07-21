@@ -5,15 +5,9 @@ account: behroozh
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1933279
-<<<<<<< HEAD
-bundleId: 3398212
+bundleId: 3415268
 url: https://behroozh.shinyapps.io/COVID19/
-when: 1594876178.42319
-=======
-bundleId: 3370250
-url: https://behroozh.shinyapps.io/COVID19/
-when: 1594271896.87638
->>>>>>> f69f3daade6122f55b21842f403864ee73a7bac8
+when: 1595310152.35555
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|bookmarks.rds|Icon|ACAPS/20200402_acaps_-_covid-19_goverment_measures_dataset_v4.xlsx|community mobility report/0. test_package.R|community mobility report/bitmap.png|community mobility report/google_cmr_de_p1.png|EpiModel Exploration/0. test_library.R|EpiModel Exploration/1. keep_test_library.R|output/covid19_country_2020-04-01.csv|www/googleaae6605609290622.html|www/image1.png|www/image2.png|daily data|Other|prepare_data|shiny_bookmarks
+ignoredFiles:
