@@ -1,3 +1,19 @@
+library(shiny)
+library(shinyWidgets)
+library(shinyjs)
+library(tidyverse)
+library(scales)
+library(data.table)
+library(lubridate)
+library(ggrepel)
+library(xml2)
+library(bit64)
+library(RCurl)
+library(httr)
+library(readxl)
+library(wbstats)
+library(DT)
+library(fmsb)
 # load data in
 
 
